@@ -1,27 +1,35 @@
 {
   "name": "ucan.storage",
-  "version": "1.0.0",
-  "main": "src/index.js",
-  "type": "module",
-  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "format": "prettier --write '**/*.{js,ts,md,yml,json}' --ignore-path .gitignore",
+    "format:check": "prettier --check '**/*.{js,ts,md,yml,json}' --ignore-path .gitignore",
+    "clean": "rm -rf node_modules yarn.lock packages/*/{yarn.lock,package-lock.json,coverage,.nyc_output,dist,node_modules}",
+    "lint": "yarn workspace ucan-storage lint && yarn workspace ucan-common lint && yarn workspace ucan-service lint",
+    "test": "yarn workspace ucan-storage test && yarn workspace ucan-service test",
+    "docs": "yarn lint && typedoc packages/* --entryPointStrategy packages --out docs"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "npx lint-staged"
+  },
+  "lint-staged": {
+    "*.{js,ts,d.ts,md,yml,json}": "prettier --write",
+    "*.{js}": "eslint --fix"
+  },
   "devDependencies": {
-    "eslint-config-prettier": "^8.3.0",
-    "typescript": "^4.5.5",
-    "eslint": "^8.7.0",
-    "eslint-config-ipfs": "^2.1.0",
-    "ucans": "^0.9.0-alpha3"
+    "hd-scripts": "^1.1.0",
+    "lint-staged": "^12.3.4",
+    "prettier": "2.5.1",
+    "simple-git-hooks": "^2.7.0",
+    "typescript": "4.5.5",
+    "typedoc": "^0.22.11",
+    "typedoc-plugin-missing-exports": "^0.22.6"
   },
-  "dependencies": {
-    "@noble/ed25519": "^1.5.2",
-    "uint8arrays": "^3.0.0"
+  "engines": {
+    "node": "16.x"
   },
-  "eslintConfig": {
-    "extends": [
-      "ipfs",
-      "prettier"
-    ],
-    "parserOptions": {
-      "sourceType": "module"
-    }
-  }
+  "prettier": "hd-scripts/prettier.config.js"
 }

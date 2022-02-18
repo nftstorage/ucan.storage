@@ -8,6 +8,8 @@ coverage
 
 # misc
 .DS_Store
+dist
+docs
 
 # debug
 npm-debug.log*

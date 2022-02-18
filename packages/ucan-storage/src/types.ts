@@ -1,19 +1,33 @@
-import type KeyPair from './keypair'
+import type { KeyPair } from './keypair'
 
 export type KeyType = 'rsa' | 'ed25519' | 'bls12-381'
 export type Fact = Record<string, unknown>
 
-/**
- * {
-  "cap":"PUT"
-  "id": "/uploads/did:key:gozala/"
+export interface Capability {
+  with: string
+  can: string
 }
+
+export type StorageCapability = UploadAll | UploadImport
+
+/**
+ * The `upload/*` action allows access to **ALL** upload operations under the specified resource in the `with` field.
  */
-export type Capability = {
-  // resource
-  [rsc: string]: unknown
-  // capability / operation
-  cap: string
+export interface UploadAll {
+  with: string
+  can: 'upload/*'
+}
+
+/**
+ * The `upload/IMPORT` action allows access to importing a CARs under the specified resource in the `with` field.
+ */
+export interface UploadImport {
+  with: string
+  can: 'upload/IMPORT'
+  /**
+   * Constrain an import by [multihash](https://github.com/multiformats/multihash)
+   */
+  mh: string
 }
 
 /**
@@ -23,7 +37,7 @@ export type Capability = {
  * `typ`, Type, the type of this data structure, JWT.
  * `ucv`, UCAN version.
  */
-export type UcanHeader = {
+export interface UcanHeader {
   alg: string
   typ: string
   ucv: string
@@ -41,15 +55,15 @@ export type UcanHeader = {
  * `prf`, Proofs, nested tokens with equal or greater privileges.
  * `att`, Attenuation, a list of resources and capabilities that the ucan grants.
  */
-export type UcanPayload<Prf = string> = {
+export interface UcanPayload<Prf = string> {
   iss: string
   aud: string
   exp: number
   nbf?: number
   nnc?: string
-  att: Array<Capability>
-  fct?: Array<Fact>
-  prf: Array<Prf>
+  att: StorageCapability[]
+  fct?: Fact[]
+  prf: Prf[]
 }
 
 export interface UcanParts<Prf = string> {
@@ -57,49 +71,41 @@ export interface UcanParts<Prf = string> {
   payload: UcanPayload<Prf>
 }
 
-export type Ucan<Prf = string> = {
+export interface Ucan<Prf = string> {
   header: UcanHeader
   payload: UcanPayload<Prf>
   signature: string
 }
 
 export interface BuildParams {
-  //from
+  // from
   issuer: KeyPair
   // to
   audience: string
 
-  capabilities?: Array<Capability>
+  capabilities: StorageCapability[]
   // time bounds
   lifetimeInSeconds?: number // expiration overrides lifetimeInSeconds
   expiration?: number
   notBefore?: number
 
   // proofs / other info
-  facts?: Array<Fact>
-  proofs?: Array<string>
+  facts?: Fact[]
+  proofs?: string[]
   addNonce?: boolean
-  // in the weeds
-  ucanVersion?: string
 }
 
-export interface BuildPartsParams {
-  keyType: KeyType
-  //from did string
+export interface BuildPayload extends Omit<BuildParams, 'issuer'> {
+  // from did string
   issuer: string
-  // to
-  audience: string
+}
 
-  capabilities?: Array<Capability>
-  // time bounds
-  lifetimeInSeconds?: number // expiration overrides lifetimeInSeconds
-  expiration?: number
-  notBefore?: number
-
-  // proofs / other info
-  facts?: Array<Fact>
-  proofs?: Array<string>
-  addNonce?: boolean
-  // in the weeds
-  ucanVersion?: string
+/**
+ * Validation options
+ */
+export interface ValidateOptions {
+  checkIssuer?: boolean
+  checkIsExpired?: boolean
+  checkIsTooEarly?: boolean
+  checkSignature?: boolean
 }

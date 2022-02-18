@@ -1,8 +1,12 @@
-import KeyPair from './src/keypair.js'
-import { build, encode } from './src/index.js'
+/* eslint-disable no-console */
+import { KeyPair } from './src/keypair.js'
+import { build } from './src/index.js'
 import * as ucan from 'ucans'
 
 export const emailSemantics = {
+  /**
+   * @param {{ email: any; cap: string; }} cap
+   */
   tryParsing(cap) {
     if (typeof cap.email === 'string' && cap.cap === 'SEND') {
       return {
@@ -10,15 +14,21 @@ export const emailSemantics = {
         cap: cap.cap,
       }
     }
-    return null
   },
 
+  /**
+   * @param {{ email: any; }} parentCap
+   * @param {{ email: any; }} childCap
+   */
   tryDelegating(parentCap, childCap) {
     // potency is always "SEND" anyway, so doesn't need to be checked
-    return childCap.email === parentCap.email ? childCap : null
+    return childCap.email === parentCap.email ? childCap : undefined
   },
 }
 
+/**
+ * @param {ucan.Chained} token
+ */
 export function emailCapabilities(token) {
   return ucan.capabilities(token, emailSemantics)
 }
@@ -51,14 +61,19 @@ async function main() {
         cap: 'SEND',
       },
     ],
-    proofs: [encode(u1)],
+    proofs: [u1.jwt],
   })
   console.log(user1KP.did())
   console.log(user2KP.did())
 
-  const chained = await ucan.Chained.fromToken(encode(u2))
+  // eslint-disable-next-line no-unused-vars
+  const chained = await ucan.Chained.fromToken(u2.jwt)
+  // const sss = chained.reduce((ucan, proofs) => {
+  //   console.log(ucan, [...proofs()])
+  //   return proofs
+  // })
 
-  console.log(Array.from(emailCapabilities(chained)))
+  // console.log([...emailCapabilities(chained)])
 }
 
 main()

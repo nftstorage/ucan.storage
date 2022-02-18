@@ -5,18 +5,18 @@
     "outDir": "dist",
     "allowJs": true,
     "checkJs": true,
-    "target": "ES2019",
+    "target": "ES2020",
     "lib": [
-      "ES2019",
+      "ES2020",
       "ES2020.Promise",
       "ES2020.String",
       "ES2020.BigInt",
-      "DOM",
-      "DOM.Iterable"
+      "DOM"
     ],
     "noEmit": false,
     "noEmitOnError": true,
-    "emitDeclarationOnly": true,
+    "emitDeclarationOnly": false,
+    "sourceMap": true,
     "declaration": true,
     "declarationMap": true,
     "incremental": true,
@@ -25,7 +25,7 @@
     "removeComments": false,
     // module resolution
     "esModuleInterop": true,
-    "moduleResolution": "node",
+    "moduleResolution": "Node",
     // linter checks
     "noImplicitReturns": false,
     "noFallthroughCasesInSwitch": true,
@@ -38,5 +38,5 @@
     "stripInternal": true,
     "resolveJsonModule": true
   },
-  "include": ["src", "src/index.js", "test.js"]
+  "include": ["src", "src/types.ts"]
 }

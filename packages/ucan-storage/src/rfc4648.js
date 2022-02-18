@@ -9,6 +9,7 @@ const decode = (string, alphabet, bitsPerChar, name) => {
   // Build the character lookup table:
   /** @type {Record<string, number>} */
   const codes = {}
+  // eslint-disable-next-line unicorn/no-for-loop
   for (let i = 0; i < alphabet.length; ++i) {
     codes[alphabet[i]] = i
   }
@@ -20,7 +21,7 @@ const decode = (string, alphabet, bitsPerChar, name) => {
   }
 
   // Allocate the output:
-  const out = new Uint8Array(((end * bitsPerChar) / 8) | 0)
+  const out = new Uint8Array(Math.trunc((end * bitsPerChar) / 8))
 
   // Parse the data:
   let bits = 0 // Number of bits currently in the buffer
@@ -65,9 +66,9 @@ const encode = (data, alphabet, bitsPerChar) => {
 
   let bits = 0 // Number of bits currently in the buffer
   let buffer = 0 // Bits waiting to be written out, MSB first
-  for (let i = 0; i < data.length; ++i) {
+  for (const datum of data) {
     // Slurp data into the buffer:
-    buffer = (buffer << 8) | data[i]
+    buffer = (buffer << 8) | datum
     bits += 8
 
     // Write out as much as we can:

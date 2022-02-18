@@ -13,7 +13,6 @@ UCAN.storage defines the [UCAN](https://github.com/ucan-wg/spec/blob/main/README
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
 
-
 # 1. Introduction
 
 UCAN.storage describes how our services leverage UCANs to decentralized authorization and access permissions using a specific capability scheme embedded in UCAN tokens.
@@ -25,6 +24,7 @@ The rest of this document outlines the `storage` scheme, the capabilities it sup
 Refer to [UCAN Spec](https://github.com/ucan-wg/spec/blob/main/README.md#2-terminology) for general UCAN terminology. This document defines only term specific for UCAN.storage.
 
 # 2.1 Service
+
 A service is an entity that implements this spec, is able to serve as root issuer of UCAN.storage tokens and validate them. Examples of UCAN.storage complaint services are [web3.storage](https://web3.storage) and [nft.storage](https://nft.storage).
 
 # 2.2 DID
@@ -37,7 +37,6 @@ The actual representation is always as described in the `did:key` [specification
 did-key-format := did:key:<mb-value>
 mb-value       := z[a-km-zA-HJ-NP-Z1-9]+
 ```
-
 
 # 3. JWT Structure
 
@@ -67,12 +66,11 @@ The payload MUST describe the authorization claims being made, who is involved, 
 | `prf` | `String[]` | Proof of delegation (witnesses are nested UCANs) | Yes      |
 | `att` | `Json[]`   | Attenuations                                     | Yes      |
 
-
 ### 3.2.2 Attenuation
 
-The REQUIRED `att` field contains a set of capabilities as defined in the [UCAN Attenuation Scope](https://github.com/ucan-wg/spec/blob/main/README.md#325-attenuation-scope).
+The REQUIRED `att` field contains a set of capabilities as defined in the [Capability Scope](https://github.com/ucan-wg/spec#24-capability-scope).
 
-For UCAN.storage `att` MUST contain at least one capability using the `storage` scheme.
+For UCAN.storage `att` MUST contain at least one `storage` capability.
 
 #### Examples
 
@@ -85,15 +83,15 @@ For UCAN.storage `att` MUST contain at least one capability using the `storage` 
 ]
 ```
 
-# 4. `storage` scheme
+# 4. `storage` Capability
 
-The `storage` scheme represents the ownership and access permissions over storage resources in a [Service](#21-Service).
+The `storage` capability represents the ownership and access to operations over storage resources in a [Service](#21-Service).
 
 ## 4.1 Resource Pointer
 
 The resource pointer MUST match the current proof scope. Meaning it will follow the UCAN chain of audiences.
 
-When a [Service](#21-Service) issues a UCAN for `did:user1` the resource will be `storage://did:user-1`, if `user-1` issues a delegated UCAN to `did:user-2` it MAY further restrict the scope of it by setting the resource to `storage://did:user-1/did:user-2/`. 
+When a [Service](#21-Service) issues a UCAN for `did:user1` the resource will be `storage://did:user-1`, if `user-1` issues a delegated UCAN to `did:user-2` it MAY further restrict the scope of it by setting the resource to `storage://did:user-1/did:user-2/`.
 
 When restricting the issuer MUST add another path segment to the resource URI. Using audience DID will guarantee uniqueness, although it is not REQUIRED to be unique and could be anything i.e. `storage://did:user-1/public`.
 
@@ -102,6 +100,7 @@ When restricting the issuer MUST add another path segment to the resource URI. U
 -->
 
 #### Examples
+
 ```json
 // Ucan from service to user1
 
@@ -119,7 +118,7 @@ When restricting the issuer MUST add another path segment to the resource URI. U
     "iss": "did:user-1"
     "aud": "did:user-2"
     "att": {
-        "with": "storage://did:user-1/did:user-2"    
+        "with": "storage://did:user-1/did:user-2"
     }
 }
 
@@ -129,17 +128,17 @@ When restricting the issuer MUST add another path segment to the resource URI. U
     "iss": "did:user2"
     "aud": "did:service-did"
     "att": {
-        "with": "storage://did:user-1/did:user-2"    
+        "with": "storage://did:user-1/did:user-2"
     }
 }
 
 ```
 
-## 4.2 Capabilities
+## 4.2 Actions
 
-### 4.2.1 `upload/IMPORT` Importing CARs
+### 4.2.1 Upload with all operations `upload/*`
 
-The `upload/IMPORT` capability allows access to importing a CAR under the specified resource in the `with` field.
+The `upload/*` action allows access to **ALL** upload operations under the specified resource in the `with` field.
 
 ```json
 "att": [
@@ -151,14 +150,25 @@ The `upload/IMPORT` capability allows access to importing a CAR under the specif
 
 ```
 
-#### 4.2.1.1 Constraints
+### 4.2.2 Upload with import operation `upload/IMPORT`
 
-The `upload/IMPORT` ability MUST support a OPTIONAL field `mh` to constrain an import by [multihash](https://github.com/multiformats/multihash).   
+The `upload/IMPORT` action allows access to importing a CARs under the specified resource in the `with` field.
 
+```json
+"att": [
+  {
+    "with": "storage://did:user",
+    "can": "upload/IMPORT",
+  }
+]
+
+```
+
+#### 4.2.2.1 `upload/IMPORT` Constraints
+
+The `upload/IMPORT` action MUST support a OPTIONAL field `mh` to constrain an import by [multihash](https://github.com/multiformats/multihash).
 
 > A Service MAY use this multihash to perform integrity check.
-
-
 
 ```json
 "att": [
@@ -170,8 +180,6 @@ The `upload/IMPORT` ability MUST support a OPTIONAL field `mh` to constrain an i
 ]
 
 ```
-
-
 
 # 5. User Stories
 
@@ -194,7 +202,7 @@ further can limit by requesting upload specific UCANs and throw them away once u
 
 ```mermaid
 sequenceDiagram
-  
+
   Note over Service,Marketplace: Service needs to know Marketplace
   Marketplace->>Service: Request UCAN for did:market
   Service->>Service: Signs UCAN for did:market
@@ -241,7 +249,7 @@ sequenceDiagram
   "aud": "did:service",
   "exp": 1643905306, // =< 15 mins
   // call we skip this att since it can't be anything other than the previous ????
-  "att": { 
+  "att": {
     {
       "with": "storage://did:marketplace/did:user", // "with": "prf:*"
       "can": "upload_v1/IMPORT"                     // "can": "ucan/DELEGATE"
@@ -253,12 +261,11 @@ sequenceDiagram
 }
 ```
 
-
 ### Marketplace intermidiates every upload by multihash
 
 ```mermaid
 sequenceDiagram
-  
+
   Note over Service,Marketplace: Service needs to know Marketplace
   Marketplace->>Service: Request UCAN for did:market
   Service->>Service: Signs UCAN for did:market
@@ -269,7 +276,6 @@ sequenceDiagram
   Alice->>Alice: Signs UCAN for did:service
   Alice->>Service: UCAN+Car
 ```
-
 
 ```json
 // UCAN for did:market
@@ -303,7 +309,7 @@ sequenceDiagram
   "iss": "did:user",
   "aud": "did:service",
   // call we skip this att since it can't be anything other than the previous ????
-  "att": { 
+  "att": {
     {
       "with": "storage://did:marketplace/did:user",
       "can": "upload_v1/IMPORT"
@@ -311,4 +317,3 @@ sequenceDiagram
   }
 }
 ```
-
