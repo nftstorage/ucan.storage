@@ -36,20 +36,32 @@ export const storageSemantics = {
   },
 
   tryDelegating(parentCap, childCap) {
+    // check for unrelated caps
+
+    // console.log('\n', childCap, '\n', parentCap)
     // must not escalate capability level
     if (uploadLevels[childCap.can] > uploadLevels[parentCap.can]) {
+      // console.log('⚠️ Capability level escalation')
       return {
         escalation: 'Capability level escalation',
         capability: childCap,
       }
     }
 
-    if (childCap.with.includes(parentCap.with)) {
+    if (!childCap.with.includes(parentCap.with)) {
+      // console.log('⚠️ Child resource does not match parent resource')
       return {
-        escalation: 'Child resource must be under parent resource',
+        escalation: 'Child resource does not match parent resource',
         capability: childCap,
       }
     }
+
+    // if (childCap.with.length <= parentCap.with.length) {
+    //   return {
+    //     escalation: 'Child resource must be under parent resource',
+    //     capability: childCap,
+    //   }
+    // }
 
     return childCap
   },

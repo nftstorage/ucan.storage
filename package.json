@@ -17,7 +17,7 @@
   },
   "lint-staged": {
     "*.{js,ts,d.ts,md,yml,json}": "prettier --write",
-    "*.{js}": "eslint --fix"
+    "*.js": "eslint --fix"
   },
   "devDependencies": {
     "hd-scripts": "^1.1.0",
