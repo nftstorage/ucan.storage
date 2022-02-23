@@ -1,5 +1,6 @@
-import { base58btc, base64url, concatUint8, equals, utf8 } from './utils.js'
+import { concatUint8, equals } from './utils.js'
 import * as ed from '@noble/ed25519'
+import { base58btc, base64url, utf8 } from './encoding.js'
 
 export const BASE58_DID_PREFIX = 'did:key:z' // z is the multibase prefix for base58btc byte encoding
 /** https://github.com/multiformats/multicodec/blob/e9ecf587558964715054a0afcc01f7ace220952c/table.csv#L94 */
@@ -14,7 +15,7 @@ export function publicKeyBytesToDid(publicKeyBytes) {
   const prefixedBytes = concatUint8([EDWARDS_DID_PREFIX, publicKeyBytes])
 
   // Encode prefixed
-  return BASE58_DID_PREFIX + base58btc().encode(prefixedBytes)
+  return BASE58_DID_PREFIX + base58btc.encode(prefixedBytes)
 }
 
 /**
@@ -28,7 +29,7 @@ export function didToPublicKeyBytes(did) {
   }
 
   const didWithoutPrefix = did.slice(BASE58_DID_PREFIX.length)
-  const magicBytes = base58btc().decode(didWithoutPrefix)
+  const magicBytes = base58btc.decode(didWithoutPrefix)
 
   return parseMagicBytes(magicBytes).keyBytes
 }
@@ -40,7 +41,7 @@ export function didToPublicKeyBytes(did) {
  */
 export function didKeyType(did) {
   const didWithoutPrefix = did.slice(BASE58_DID_PREFIX.length)
-  const magicBytes = base58btc().decode(didWithoutPrefix)
+  const magicBytes = base58btc.decode(didWithoutPrefix)
   return parseMagicBytes(magicBytes).type
 }
 

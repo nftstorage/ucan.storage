@@ -1,5 +1,4 @@
-import baseX from 'base-x'
-import { rfc4648 } from './rfc4648.js'
+import { base64url, utf8 } from './encoding.js'
 
 /**
  * Concat Uint8Arrays
@@ -42,37 +41,6 @@ export function equals(a, b) {
   }
 
   return true
-}
-
-export function base58btc() {
-  const base = baseX(
-    '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
-  )
-  return base
-}
-
-export const base64url = rfc4648({
-  name: 'base64url',
-  bitsPerChar: 6,
-  alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_',
-})
-
-export const utf8 = {
-  /**
-   * @param {Uint8Array} input
-   */
-  encode(input) {
-    const decoder = new TextDecoder('utf8')
-    return decoder.decode(input)
-  },
-  /**
-   * @param {string} input
-   * @returns {Uint8Array}
-   */
-  decode(input) {
-    const encoder = new TextEncoder()
-    return encoder.encode(input)
-  },
 }
 
 /**

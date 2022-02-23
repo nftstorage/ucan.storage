@@ -1,18 +1,18 @@
 import { didKeyType, publicKeyBytesToDid, verify } from './did.js'
+import { base64url, utf8 } from './encoding.js'
 import {
-  base64url,
   serialize,
   deserialize,
   jwtAlgorithm,
   isExpired,
   isTooEarly,
-  utf8,
 } from './utils.js'
 
 const TYPE = 'JWT'
 const VERSION = '0.8.0'
 
 export { KeyPair } from './keypair.js'
+
 /**
  * @param {import("./types").BuildParams} params
  */

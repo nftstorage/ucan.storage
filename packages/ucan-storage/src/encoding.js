@@ -1,4 +1,8 @@
+import baseX from 'base-x'
+
 /**
+ * RFC4648 decode
+ *
  * @param {string} string
  * @param {string} alphabet
  * @param {number} bitsPerChar
@@ -54,6 +58,8 @@ const decode = (string, alphabet, bitsPerChar, name) => {
 }
 
 /**
+ * RFC4648 encode
+ *
  * @param {Uint8Array} data
  * @param {string} alphabet
  * @param {number} bitsPerChar
@@ -124,3 +130,31 @@ export const base64Pad = rfc4648({
   bitsPerChar: 6,
   alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=',
 })
+
+export const base64url = rfc4648({
+  name: 'base64url',
+  bitsPerChar: 6,
+  alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_',
+})
+
+export const base58btc = baseX(
+  '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
+)
+
+export const utf8 = {
+  /**
+   * @param {Uint8Array} input
+   */
+  encode(input) {
+    const decoder = new TextDecoder('utf8')
+    return decoder.decode(input)
+  },
+  /**
+   * @param {string} input
+   * @returns {Uint8Array}
+   */
+  decode(input) {
+    const encoder = new TextEncoder()
+    return encoder.encode(input)
+  },
+}

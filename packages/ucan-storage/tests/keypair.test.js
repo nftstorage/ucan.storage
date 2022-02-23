@@ -1,9 +1,9 @@
 import { test } from 'uvu'
 import * as assert from 'uvu/assert'
-import { didToPublicKeyBytes } from '../src/did.js'
-import { KeyPair } from '../src/keypair.js'
-import { base64Pad } from '../src/rfc4648.js'
 import * as ed from '@noble/ed25519'
+import { KeyPair } from '../src/keypair.js'
+import { base64Pad } from '../src/encoding.js'
+import { didToPublicKeyBytes } from '../src/did.js'
 
 const data = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8, 9])
 
@@ -48,6 +48,17 @@ test('should sign and verify from did', async () => {
   const signature = await kp.sign(data)
 
   assert.ok(await ed.verify(signature, data, didToPublicKeyBytes(kp.did())))
+})
+
+test('should export/import', async () => {
+  const kp = await KeyPair.create()
+
+  const privateKeyHash = kp.export()
+
+  const kp2 = await KeyPair.fromExportedKey(privateKeyHash)
+  assert.is(kp.publicKeyStr, kp2.publicKeyStr)
+
+  assert.equal(kp.privateKey, kp2.privateKey)
 })
 
 test.run()
