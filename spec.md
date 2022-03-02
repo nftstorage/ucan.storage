@@ -11,7 +11,7 @@ UCAN.storage defines the [UCAN](https://github.com/ucan-wg/spec/blob/main/README
 
 ## Language
 
-The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
+The key words "**MUST**", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
 
 # 1. Introduction
 
@@ -144,7 +144,7 @@ The `upload/*` action allows access to **ALL** upload operations under the speci
 "att": [
   {
     "with": "storage://did:user",
-    "can": "upload/IMPORT",
+    "can": "upload/*",
   }
 ]
 
@@ -256,7 +256,7 @@ sequenceDiagram
     },
   },
   "prf": [
-      ucan_0
+      ucan_0, ucan_1
   ]
 }
 ```
@@ -317,3 +317,9 @@ sequenceDiagram
   }
 }
 ```
+
+# Ideas
+
+protect against replay if nonce is present and ttl is short like 24h+-
+
+https://github.com/ucan-wg/spec#521-invocation-recipient-validation

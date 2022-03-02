@@ -1,11 +1,10 @@
-import * as ucan from 'ucan-storage'
-import * as ucans from 'ucans'
-import { storageSemantics } from 'ucan-common'
+import * as ucan from './ucan-storage.js'
 import { UcanChain } from './ucan-chain.js'
+import { KeyPair } from './keypair.js'
 
 export class Service {
   /**
-   * @param {ucan.KeyPair} keypair
+   * @param {KeyPair} keypair
    */
   constructor(keypair) {
     this.keypair = keypair
@@ -15,17 +14,17 @@ export class Service {
    * @param {string} key
    */
   static async fromPrivateKey(key) {
-    const kp = await ucan.KeyPair.fromExportedKey(key)
+    const kp = await KeyPair.fromExportedKey(key)
     return new Service(kp)
   }
 
   static async create() {
-    return new Service(await ucan.KeyPair.create())
+    return new Service(await KeyPair.create())
   }
 
   /**
    * @param {string} encodedUcan
-   * @param {import('ucan-storage/dist/src/types').ValidateOptions} options
+   * @param {import('./types').ValidateOptions} options
    */
   async validate(encodedUcan, options) {
     const token = await UcanChain.fromToken(encodedUcan, options)
@@ -38,10 +37,10 @@ export class Service {
   }
 
   /**
-   * @param {ucans.Chained} ucan
+   * @param {UcanChain} ucan
    */
   static caps(ucan) {
-    return ucans.capabilities(ucan, storageSemantics)
+    // return ucans.capabilities(ucan, storageSemantics)
   }
 
   did() {
@@ -52,7 +51,7 @@ export class Service {
    * @param {any} did
    */
   ucan(did) {
-    return ucan.Ucan({
+    return ucan.build({
       issuer: this.keypair,
       audience: did,
       capabilities: [{ with: `storage://${did}`, can: 'upload/*' }],

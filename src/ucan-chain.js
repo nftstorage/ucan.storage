@@ -1,9 +1,8 @@
-import * as ucan from 'ucan-storage'
-import { isCapabilityEscalation } from 'ucans'
+import * as ucan from './index.js'
 
 /**
  * @template A
- * @param {import('ucans').CapabilitySemantics<A>} semantics
+ * @param {import('./types').CapabilitySemantics<A>} semantics
  * @param {UcanChain} ucan
  */
 function* findValidCaps(semantics, ucan) {
@@ -27,14 +26,14 @@ function* findValidCaps(semantics, ucan) {
     }
 
     const parsed = semantics.tryParsing(cap)
-    if (parsed !== null) {
+    if (!(parsed instanceof Error)) {
       yield parsed
     }
   }
 
   for (const parentCap of parentCaps) {
     const parsed = semantics.tryParsing(parentCap)
-    if (parsed !== null) {
+    if (!(parsed instanceof Error)) {
       yield parsed
     }
   }
@@ -46,7 +45,7 @@ function* findValidCaps(semantics, ucan) {
  * @template A
  * @param {UcanChain} ucan
  * @param {A} capParsed
- * @param {import('ucans').CapabilitySemantics<A>} semantics
+ * @param {import('./types').CapabilitySemantics<A>} semantics
  */
 function canDelegate(ucan, capParsed, semantics) {
   const ucanCapsParsed = findValidCaps(semantics, ucan)
@@ -55,7 +54,7 @@ function canDelegate(ucan, capParsed, semantics) {
   for (const ucanCapParsed of ucanCapsParsed) {
     const result = semantics.tryDelegating(ucanCapParsed, capParsed)
 
-    if (isCapabilityEscalation(result)) {
+    if (result instanceof Error) {
       escalation = result
     } else if (result !== null) {
       return { value: ucanCapParsed }
@@ -63,9 +62,7 @@ function canDelegate(ucan, capParsed, semantics) {
   }
 
   return {
-    error: escalation
-      ? new Error(escalation.escalation)
-      : new Error('Not found.'),
+    error: escalation || new Error('Not found.'),
   }
 }
 
@@ -75,7 +72,7 @@ function canDelegate(ucan, capParsed, semantics) {
  * @template A
  * @param {UcanChain} ucan
  * @param {A} capParsed
- * @param {import('ucans').CapabilitySemantics<A>} semantics
+ * @param {import('./types').CapabilitySemantics<A>} semantics
  * @returns {UcanChain | undefined}
  */
 function findRoot(ucan, capParsed, semantics) {
@@ -96,10 +93,16 @@ function findRoot(ucan, capParsed, semantics) {
   }
 }
 
+/**
+ * Represents a UCAN chain with all the proofs parsed into UCAN chains too.
+ * - Validates each ucan
+ * - Parses all the proofs in a UCAN chain
+ * - Validate parent audience matches child issuer
+ */
 export class UcanChain {
   /**
    * @param {string} encoded
-   * @param {import('ucan-storage/dist/src/types').Ucan<UcanChain>} decoded
+   * @param {import('./types').Ucan<UcanChain>} decoded
    */
   constructor(encoded, decoded) {
     this._encoded = encoded
@@ -108,7 +111,7 @@ export class UcanChain {
 
   /**
    * @param {string} encodedUcan
-   * @param {import('ucan-storage/dist/src/types').ValidateOptions} options
+   * @param {import('./types').ValidateOptions} options
    * @returns {Promise<UcanChain>}
    */
   static async fromToken(encodedUcan, options) {
@@ -125,6 +128,7 @@ export class UcanChain {
     const incorrectProof = proofs.find(
       (proof) => proof.audience() !== token.payload.iss
     )
+
     if (incorrectProof) {
       throw new Error(
         `Invalid UCAN: Audience ${incorrectProof.audience()} doesn't match issuer ${
@@ -148,7 +152,7 @@ export class UcanChain {
    * Get valid capabilities for the semantics
    *
    * @template A
-   * @param {import('ucans').CapabilitySemantics<A>} semantics
+   * @param {import('./types').CapabilitySemantics<A>} semantics
    */
   caps(semantics) {
     const validCaps = []
@@ -165,13 +169,13 @@ export class UcanChain {
 
   /**
    * @template A
-   * @param {import('ucan-storage/dist/src/types').Capability} cap
-   * @param {import("ucans").CapabilitySemantics<A>} semantics
+   * @param {import('./types').Capability} cap
+   * @param {import('./types').CapabilitySemantics<A>} semantics
    */
   claim(cap, semantics) {
     const capParsed = semantics.tryParsing(cap)
-    if (capParsed === null) {
-      throw new Error('Can not parse cap.')
+    if (capParsed instanceof Error) {
+      throw capParsed
     }
 
     const { value, error } = canDelegate(this, capParsed, semantics)
@@ -198,7 +202,7 @@ export class UcanChain {
    * The payload the top level represented by this Chain element.
    * Its proofs are omitted. To access proofs, use `.proofs()`
    *
-   * @returns {import('ucan-storage/dist/src/types').Ucan<never>}
+   * @returns {import('./types').Ucan<never>}
    */
   payload() {
     return {
@@ -210,12 +214,7 @@ export class UcanChain {
     }
   }
 
-  /**
-   *
-   * @returns {import('ucan-storage/dist/src/types').Capability[]}
-   */
   capabilities() {
-    // @ts-ignore
     return this._decoded.payload.att
   }
 }

@@ -107,11 +107,12 @@ export async function validate(encodedUcan, options) {
     ...options,
   }
 
-  const [encodedHeader, encodedPayload, signature] = encodedUcan.split('.')
+  const [encodedHeader, encodedPayload, encodedSignature] =
+    encodedUcan.split('.')
   if (
     encodedHeader === undefined ||
     encodedPayload === undefined ||
-    signature === undefined
+    encodedSignature === undefined
   ) {
     throw new Error(
       `Can't parse UCAN: ${encodedUcan}: Expected JWT format: 3 dot-separated base64url-encoded values.`
@@ -125,11 +126,13 @@ export async function validate(encodedUcan, options) {
     deserialize(encodedPayload)
   )
 
+  const signature = base64url.decode(encodedSignature)
+
   if (opts.checkIssuer) {
     const issuerKeyType = didKeyType(payload.iss)
     if (jwtAlgorithm(issuerKeyType) !== header.alg) {
       throw new Error(
-        `Invalid UCAN: ${encodedUcan}: Issuer key type does not match UCAN's \`alg\` property.`
+        `Invalid UCAN: ${encodedUcan}: Issuer key type does not match UCAN's alg property.`
       )
     }
   }

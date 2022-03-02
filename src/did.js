@@ -1,6 +1,6 @@
 import { concatUint8, equals } from './utils.js'
 import * as ed from '@noble/ed25519'
-import { base58btc, base64url, utf8 } from './encoding.js'
+import { base58btc, utf8 } from './encoding.js'
 
 export const BASE58_DID_PREFIX = 'did:key:z' // z is the multibase prefix for base58btc byte encoding
 /** https://github.com/multiformats/multicodec/blob/e9ecf587558964715054a0afcc01f7ace220952c/table.csv#L94 */
@@ -72,13 +72,9 @@ export function hasPrefix(prefixedKey, prefix) {
 
 /**
  * @param {string } data
- * @param {string} signature
+ * @param {Uint8Array} signature
  * @param {string} did
  */
 export function verify(data, signature, did) {
-  return ed.verify(
-    base64url.decode(signature),
-    utf8.decode(data),
-    didToPublicKeyBytes(did)
-  )
+  return ed.verify(signature, utf8.decode(data), didToPublicKeyBytes(did))
 }

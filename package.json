@@ -1,25 +1,45 @@
 {
-  "name": "ucan.storage",
-  "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
+  "name": "ucan-storage",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "types": "dist/src/index.d.ts",
+  "typedocMain": "dist/src/index.js",
+  "type": "module",
+  "license": "MIT",
+  "exports": {
+    ".": "./src/index.js",
+    "./package.json": "./package.json",
+    "./keypair": "./src/keypair.js",
+    "./types": "./src/types.ts"
+  },
+  "typesVersions": {
+    "*": {
+      "types": [
+        "src/types.ts"
+      ]
+    }
+  },
   "scripts": {
     "format": "prettier --write '**/*.{js,ts,md,yml,json}' --ignore-path .gitignore",
     "format:check": "prettier --check '**/*.{js,ts,md,yml,json}' --ignore-path .gitignore",
-    "clean": "rm -rf node_modules yarn.lock packages/*/{yarn.lock,package-lock.json,coverage,.nyc_output,dist,node_modules}",
-    "lint": "yarn workspace ucan-storage lint && yarn workspace ucan-common lint && yarn workspace ucan-service lint",
-    "test": "yarn workspace ucan-storage test && yarn workspace ucan-service test",
-    "docs": "yarn lint && typedoc packages/* --entryPointStrategy packages --out docs"
+    "clean": "rm -rf node_modules yarn.lock dist",
+    "docs": "pnpm run lint && typedoc src/ucan-storage.js src/keypair.js --out docs",
+    "lint": "eslint '**/*.{js,ts,.d.ts}' && pnpm run format:check && tsc",
+    "test": "uvu tests",
+    "test:watch": "watchlist src tests -- yarn test"
   },
-  "simple-git-hooks": {
-    "pre-commit": "npx lint-staged"
-  },
-  "lint-staged": {
-    "*.{js,ts,d.ts,md,yml,json}": "prettier --write",
-    "*.js": "eslint --fix"
+  "files": [
+    "src",
+    "dist/src/*.d.ts",
+    "dist/src/*.d.ts.map"
+  ],
+  "dependencies": {
+    "@noble/ed25519": "^1.5.2",
+    "base-x": "^4.0.0"
   },
   "devDependencies": {
+    "uvu": "^0.5.3",
+    "watchlist": "^0.3.1",
     "hd-scripts": "^1.1.0",
     "lint-staged": "^12.3.4",
     "prettier": "2.5.1",
@@ -29,7 +49,25 @@
     "typedoc-plugin-missing-exports": "^0.22.6"
   },
   "engines": {
-    "node": "16.x"
+    "node": ">= 16.0.0"
   },
-  "prettier": "hd-scripts/prettier.config.js"
+  "simple-git-hooks": {
+    "pre-commit": "npx lint-staged"
+  },
+  "lint-staged": {
+    "*.{js,ts,d.ts,md,yml,json}": "prettier --write",
+    "*.js": "eslint --fix"
+  },
+  "eslintConfig": {
+    "extends": [
+      "./node_modules/hd-scripts/eslint/index.js"
+    ]
+  },
+  "prettier": "./node_modules/hd-scripts/prettier.config.js",
+  "eslintIgnore": [
+    "node_modules",
+    "coverage",
+    "dist",
+    "docs"
+  ]
 }
