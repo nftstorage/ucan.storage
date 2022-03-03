@@ -19,19 +19,37 @@ export function publicKeyBytesToDid(publicKeyBytes) {
 }
 
 /**
+ * Parse supported did:key types
+ *
+ * @param {string} did
+ */
+export function parse(did) {
+  if (!(typeof did === 'string')) {
+    throw new TypeError('did must be a string')
+  }
+  if (!did.startsWith(BASE58_DID_PREFIX)) {
+    throw new Error('Please use a base58-encoded DID formatted `did:key:z...`')
+  }
+  const didWithoutPrefix = did.slice(BASE58_DID_PREFIX.length)
+  const magicBytes = base58btc.decode(didWithoutPrefix)
+  const keyAndType = parseMagicBytes(magicBytes)
+
+  return {
+    prefix: BASE58_DID_PREFIX,
+    publicKey: keyAndType.keyBytes,
+    type: keyAndType.type,
+  }
+}
+
+/**
  * Convert DID to public in bytes
  *
  * @param {string} did
  */
 export function didToPublicKeyBytes(did) {
-  if (!did.startsWith(BASE58_DID_PREFIX)) {
-    throw new Error('Please use a base58-encoded DID formatted `did:key:z...`')
-  }
+  const parsed = parse(did)
 
-  const didWithoutPrefix = did.slice(BASE58_DID_PREFIX.length)
-  const magicBytes = base58btc.decode(didWithoutPrefix)
-
-  return parseMagicBytes(magicBytes).keyBytes
+  return parsed.publicKey
 }
 
 /**
@@ -40,9 +58,9 @@ export function didToPublicKeyBytes(did) {
  * @param {string} did
  */
 export function didKeyType(did) {
-  const didWithoutPrefix = did.slice(BASE58_DID_PREFIX.length)
-  const magicBytes = base58btc.decode(didWithoutPrefix)
-  return parseMagicBytes(magicBytes).type
+  const parsed = parse(did)
+
+  return parsed.type
 }
 
 /**

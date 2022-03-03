@@ -27,3 +27,5 @@ export async function build(params) {
 export function validate(jwt, options) {
   return Ucan.validate(jwt, options)
 }
+
+export { isUcan } from './index.js'

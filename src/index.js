@@ -158,3 +158,30 @@ export async function validate(encodedUcan, options) {
 
   return { header, payload, signature }
 }
+
+/**
+ * Check if input is a encoded UCAN
+ *
+ * @param {string} encodedUcan
+ */
+export function isUcan(encodedUcan) {
+  const [encodedHeader, encodedPayload, encodedSignature] =
+    encodedUcan.split('.')
+  if (
+    encodedHeader === undefined ||
+    encodedPayload === undefined ||
+    encodedSignature === undefined
+  ) {
+    return false
+  }
+
+  const header = /** @type {import('./types').UcanHeader} */ (
+    deserialize(encodedHeader)
+  )
+
+  if (typeof header.ucv === 'string') {
+    return true
+  }
+
+  return false
+}
