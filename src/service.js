@@ -1,6 +1,7 @@
 import * as ucan from './ucan-storage.js'
 import { UcanChain } from './ucan-chain.js'
 import { KeyPair } from './keypair.js'
+import { storageSemantics } from './semantics.js'
 
 export class Service {
   /**
@@ -23,24 +24,36 @@ export class Service {
   }
 
   /**
+   * Validates UCAN for capability
+   *
    * @param {string} encodedUcan
-   * @param {import('./types').ValidateOptions} options
+   * @param {import('./types.js').Capability} capability
+   * @returns {Promise<UcanChain>} Returns the root ucan for capability
    */
-  async validate(encodedUcan, options) {
-    const token = await UcanChain.fromToken(encodedUcan, options)
+  async validate(encodedUcan, capability) {
+    const token = await UcanChain.fromToken(encodedUcan, {})
 
     if (token.audience() !== this.did()) {
       throw new Error('Invalid UCAN: Audience does not match this service.')
     }
 
-    return token
+    const origin = token.claim(capability, storageSemantics)
+
+    if (origin.issuer() !== this.did()) {
+      throw new Error('Invalid UCAN: Root issuer does not match this service.')
+    }
+
+    return origin
   }
 
   /**
-   * @param {UcanChain} ucan
+   * @param {string} encodedUcan
    */
-  static caps(ucan) {
-    // return ucans.capabilities(ucan, storageSemantics)
+  async validateFromCaps(encodedUcan) {
+    const token = await UcanChain.fromToken(encodedUcan, {})
+    const caps = token.caps(storageSemantics)
+
+    return caps[0]
   }
 
   did() {

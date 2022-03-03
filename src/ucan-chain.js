@@ -5,7 +5,7 @@ import * as ucan from './index.js'
  * @param {import('./types').CapabilitySemantics<A>} semantics
  * @param {UcanChain} ucan
  */
-function* findValidCaps(semantics, ucan) {
+export function* findValidCaps(semantics, ucan) {
   const caps = ucan.capabilities()
   const parentCaps = []
 
@@ -73,7 +73,7 @@ function canDelegate(ucan, capParsed, semantics) {
  * @param {UcanChain} ucan
  * @param {A} capParsed
  * @param {import('./types').CapabilitySemantics<A>} semantics
- * @returns {UcanChain | undefined}
+ * @returns {UcanChain}
  */
 function findRoot(ucan, capParsed, semantics) {
   const proofs = ucan.proofs()
@@ -158,9 +158,8 @@ export class UcanChain {
     const validCaps = []
     for (const cap of findValidCaps(semantics, this)) {
       try {
-        if (findRoot(this, cap, semantics)) {
-          validCaps.push(cap)
-        }
+        const root = findRoot(this, cap, semantics)
+        validCaps.push({ root, cap })
       } catch {}
     }
 
