@@ -71,6 +71,10 @@ export interface Ucan<Prf = string> {
   signature: Uint8Array
 }
 
+export interface UcanWithJWT extends Ucan {
+  jwt: string
+}
+
 /**
  * Parameters for the internal `build` function, which creates new UCAN tokens.
  */
