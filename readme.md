@@ -318,7 +318,7 @@ The NFT.Storage API includes endpoints for registering your DID with your NFT.St
 
 If you have not yet created an NFT.Storage account, see the [NFT.Storage documentation][nftstorage-docs].
 
-To use the UCAN API endpoints, create an API token at your NFT.Storage [account management page](https://nft.storage/manage/). In the examples below, we'll use `$API_TOKEN` to mean your NFT.Storage API token, so
+To use the UCAN API endpoints, create an API token at your NFT.Storage [account management page](https://nft.storage/manage/).
 
 ### Registering your DID
 
