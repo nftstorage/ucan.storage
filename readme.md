@@ -2,9 +2,9 @@
 
 This project defines a [specification][spec] for delegated authorization of decentralized storage services using [UCAN][ucan-intro], or User Controlled Authorization Networks.
 
-UCAN.storage was designed to be used with [NFT.Storage](https://nft.storage) and [Web3.Storage](https://web3.storage), which both provide storage services backed by the [Filecoin](https://filecoin.io) network, with content retrieval via the [InterPlanetary File System (IPFS)](https://ipfs.io). See the [Use cases](#use-cases) section below to see how it can be used.
+UCAN.storage was designed to be used with [NFT.Storage](https://nft.storage) and [Web3.Storage](https://web3.storage), which both provide storage services backed by the [Filecoin](https://filecoin.io) network, with content retrieval via the [InterPlanetary File System (IPFS)](https://ipfs.io).
 
-This repository also contains the reference implementation of the [spec][spec], in the form of a JavaScript package called `ucan-storage`.
+This repository also contains the reference implementation of the [spec][spec], in the form of a JavaScript package called `ucan-storage`. See the [Use cases](#use-cases) section below to see how it can be used, along with some code snippets.
 
 ## Getting Started
 
@@ -49,6 +49,8 @@ First, the marketplace will generate a keypair and register their DID with the s
 
 When an end-user logs into the marketplace and wants to upload to NFT.Storage, the marketplace can use their root token to create a **user token**. This time, the `iss` field contains the DID for the marketplace, since they are the one issuing the token, and the `aud` field contains the DID of the end user. The `prf` or "proof" field of the user token will contain a copy of the marketplace's root token, to verify that they actually have the permissions they're attempting to delegate. The root token is safe to share with the end-user, because it cannot be "redeemed" for storage services without the marketplace's private key.
 
+When issuing the user token, the marketplace can choose to grant all the permissions that they have access to via the root token, or they can grant a subset of the permissions. The marketplace can also set an expiration time for the user tokens, so that a lost or compromised token will eventually "time out." See the [UCAN.Storage spec][spec] for more about the permissions available.
+
 Once a marketplace end-user has a user token, they'll create one last token, a **request token** that authorizes their upload request to the NFT.Storage service. The request token is generated _by the user_, most likely in the browser with JavaScript, and it must include a signature from their private key.
 
 The request token has the end-user's DID in the `iss` field, with the DID for the NFT.Storage service in the `aud` field. The `prf` field contains a copy of the user token that was issued by the marketplace, which in turn has the root token in its own `prf` field.
@@ -56,6 +58,12 @@ The request token has the end-user's DID in the `iss` field, with the DID for th
 The request token is attached to the upload to NFT.Storage, which validates the chain of proofs encoded in the token and confirms the cryptographic identity of each participant by checking the token signatures. If the token is valid and the permissions encoded in the request token are sufficient to carry out the request, it will succeed.
 
 ## Use cases
+
+The `ucan-storage` JavaScript package supports the creation and verification of UCAN tokens, including the ability to create the "proof chains" that enable delgated authorization.
+
+This README will walk through some common scenarios, to illustrate the main features of the `ucan-storage` library. For more details, see the [API reference documentation][ucan-storage-typedoc].
+
+### Generating a keypair
 
 TODO: write up key use cases for the library:
 
@@ -75,10 +83,11 @@ TODO:
 - [ ] how to get your service's root token
 - [ ] how to issue an expiring user token to your users
 
-[spec]: ./spec.md
+[spec]: https://github.com/nftstorage/ucan.storage/blob/main/spec.md
 [ucan-intro]: https://ucan.xyz/
 [ucan-data-structure]: https://ucan.xyz/#the-ucan-data-structure
 [did-overview]: https://www.w3.org/TR/did-core/
 [did-key]: https://w3c-ccg.github.io/did-method-key/
 [jwt]: https://jwt.io/
 [unix-ts]: https://www.unixtimestamp.com/
+[ucan-storage-typedoc]: TODO://link-plz
