@@ -6,14 +6,22 @@
   "typedocMain": "dist/src/index.js",
   "type": "module",
   "license": "MIT",
+  "bin": {
+    "ucan-storage": "./src/cli.js"
+  },
   "exports": {
     ".": "./src/index.js",
     "./package.json": "./package.json",
     "./keypair": "./src/keypair.js",
-    "./types": "./src/types.ts"
+    "./types": "./src/types.ts",
+    "./did": "./src/did.js",
+    "./service": "./src/service.js"
   },
   "typesVersions": {
     "*": {
+      "*": [
+        "dist/src/*"
+      ],
       "types": [
         "src/types.ts"
       ]
@@ -35,18 +43,19 @@
   ],
   "dependencies": {
     "@noble/ed25519": "^1.5.2",
-    "base-x": "^4.0.0"
+    "base-x": "^4.0.0",
+    "sade": "^1.8.1"
   },
   "devDependencies": {
-    "uvu": "^0.5.3",
-    "watchlist": "^0.3.1",
     "hd-scripts": "^1.1.0",
     "lint-staged": "^12.3.4",
     "prettier": "2.5.1",
     "simple-git-hooks": "^2.7.0",
-    "typescript": "4.5.5",
     "typedoc": "^0.22.11",
-    "typedoc-plugin-missing-exports": "^0.22.6"
+    "typedoc-plugin-missing-exports": "^0.22.6",
+    "typescript": "4.5.5",
+    "uvu": "^0.5.3",
+    "watchlist": "^0.3.1"
   },
   "engines": {
     "node": ">= 16.0.0"
