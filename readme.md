@@ -79,7 +79,7 @@ You can install the `ucan-storage` package with your favorite JS dependency mana
 npm install ucan-storage
 ```
 
-The main exports are the [`build`][typdeoc-build] and [`validate`][typedoc-validate] methods, as well as the [`KeyPair` class][typedoc-keypair] used to manage signing keys.
+The main exports are the [`build`][typedoc-build] and [`validate`][typedoc-validate] methods, as well as the [`KeyPair` class][typedoc-keypair] used to manage signing keys.
 
 ```js
 import { build, validate, KeyPair } from 'ucan-storage'
@@ -95,7 +95,7 @@ This README will walk through some common scenarios, to illustrate the main feat
 
 To participate in the UCAN flow (both as a service, and as an end-user), you'll need a keypair.
 
-To generate a keypair using `ucan-storage`, use the static [`KeyPair.create` method][typdeoc-keypair-create]:
+To generate a keypair using `ucan-storage`, use the static [`KeyPair.create` method][typedoc-keypair-create]:
 
 ```js
 import { KeyPair } from 'ucan-storage'
@@ -264,17 +264,99 @@ The `lifetimeInSeconds` option is a helper to set the `expiration` date relative
 
 #### Validating a token
 
-TODO: how to validate, how to skip validation checks
+You can validate a UCAN token using the [`validate` function][typedoc-validate], which accepts a JWT string and returns the parsed token contents if the token is valid.
+
+If validation fails, the `Promise` returned by `validate` will reject with an `Error`, so it's important to surround calls to `validate` with `try/catch` statements when calling from `async` functions, or use `.catch()` to handle errors if resolving `Promise`s manually.
+
+```js
+import { validate } from 'ucan-storage'
+
+async function validateUCAN(ucanJWTString) {
+  try {
+    const { header, payload, signature } = await validate(ucanJWTString)
+    console.log('UCAN is valid!')
+    console.log('header:', header)
+    console.log('payload:' payload)
+  } catch (err) {
+    console.error('UCAN validation failed: ', err)
+  }
+}
+```
+
+You can make the validation more lenient by passing in a [`ValidateOptions` object][typedoc-validateoptions] and disabling the validation checks you want to skip. For example, if you want to ignore the `notBefore` timestamp, you can set the `checkIsTooEarly` option to `false`:
+
+```js
+import { validate } from 'ucan-storage'
+
+async function validateIgnoringEarlyBirds(ucanJWTString) {
+  try {
+    const validateOptions = {
+      checkIsTooEarly: false,
+    }
+    const { header, payload, signature } = await validate(
+      ucanJWTString,
+      validateOptions
+    )
+    console.log('UCAN is valid! Early? No problem!')
+  } catch (err) {
+    console.error('UCAN validation failed: ', err)
+  }
+}
+```
 
 ## Using UCANs with NFT.Storage
 
-<!-- this section should eventually migrate to the nft.storage docs site -->
+<!-- TODO: move this section into the NFT.Storage docs & link from here -->
 
-TODO:
+[NFT.Storage](https://nft.storage) is a free service for storing NFT data on the decentralized [Filecoin](https://filecoin.io) storage network, with content retrieval via [IPFS](https://ipfs.io).
 
-- [ ] how to register your DID with the service
-- [ ] how to get your service's root token
-- [ ] how to issue an expiring user token to your users
+NFT.Storage is the first service to support UCAN-based authorization using the `ucan-storage` library.
+
+For marketplaces and other platforms, adopting UCAN auth can allow you to integrate free, decentralized NFT storage into your own applications without requiring your end users to sign up for an NFT.Storage account.
+
+The NFT.Storage API includes endpoints for registering your DID with your NFT.Storage account and obtaining "root tokens" that can be used to delegate storage permissions to other users, whether they have an NFT.Storage account or not.
+
+If you have not yet created an NFT.Storage account, see the [NFT.Storage documentation][nftstorage-docs].
+
+To use the UCAN API endpoints, create an API token at your NFT.Storage [account management page](https://nft.storage/manage/). In the examples below, we'll use `$API_TOKEN` to mean your NFT.Storage API token, so
+
+### Registering your DID
+
+Once you have a normal API token, you can [generate a keypair](#generating-a-keypair) using the `ucan-storage` library and call an API endpoint to register the DID of the public key with the NFT.Storage service.
+
+To register your DID, send a `POST` request to `https://api.nft.storage/user/did` with a body containing a JSON object of the form:
+
+```json
+{
+  "did": "<your-did-string>"
+}
+```
+
+In the example below, replace `$API_TOKEN` with your NFT.Storage API token, or set a shell variable named `API_TOKEN` before running the command.
+
+Likewise, replace `$DID` with your DID string, or set a shell variable named `DID` before running the command.
+
+```bash
+curl -X POST -H "Authorization: Bearer $API_TOKEN" -H 'Content-Type: application/json' --data "{\"did\": \"$DID\"}"
+```
+
+### Obtaining a root UCAN token
+
+Once you've registered your DID, you can request a root UCAN token from the NFT.Storage API, which will be valid for a duration of two weeks.
+
+To request a root token, you must have either a normal API token or an existing root UCAN token. By providing an existing UCAN, you can "refresh" a token before it expires.
+
+Send a `POST` request to `https://api.nft.storage/user/ucan` to obtain a new UCAN token.
+
+In the example below, replace `$TOKEN` with either an existing UCAN token or an NFT.Storage API token. Or, set a shell variable named `TOKEN` before running the command.
+
+```bash
+curl -X POST -H "Authorization: Bearer $TOKEN" https://api.nft.storage/user/ucan
+```
+
+<!-- TODO: show response body -->
+
+You can use the root token to [derive child UCAN tokens](#deriving-a-child-token) for other users, or to [create a request token](#creating-a-request-token-to-upload-content) to upload content using UCAN auth instead of your API token.
 
 ## Contributing
 
@@ -297,9 +379,10 @@ npx simple-git-hooks
 [jwt]: https://jwt.io/
 [unix-ts]: https://www.unixtimestamp.com/
 [multihash]: https://github.com/multiformats/multihash
+[nftstorage-docs]: https://nft.storage/docs
 [ucan-storage-typedoc]: https://nftstorage.github.io/ucan.storage/
 [typedoc-keypair-class]: https://nftstorage.github.io/ucan.storage/classes/keypair.KeyPair.html
-[typdeoc-keypair-create]: https://nftstorage.github.io/ucan.storage/classes/keypair.KeyPair.html#create
+[typedoc-keypair-create]: https://nftstorage.github.io/ucan.storage/classes/keypair.KeyPair.html#create
 [typedoc-keypair-export]: https://nftstorage.github.io/ucan.storage/classes/keypair.KeyPair.html#export
 [typedoc-keypair-fromexportedkey]: https://nftstorage.github.io/ucan.storage/classes/keypair.KeyPair.html#fromExportedKey
 [typedoc-ucan-storage-module]: https://nftstorage.github.io/ucan.storage/modules/ucan_storage.html
@@ -309,3 +392,4 @@ npx simple-git-hooks
 [typedoc-storagecapability]: https://nftstorage.github.io/ucan.storage/modules/ucan_storage._internal_.html#StorageCapability
 [typedoc-uploadall]: https://nftstorage.github.io/ucan.storage/interfaces/ucan_storage._internal_.UploadAll.html
 [typedoc-uploadimport]: https://nftstorage.github.io/ucan.storage/interfaces/ucan_storage._internal_.UploadImport.html
+[typedoc-validateoptions]: https://nftstorage.github.io/ucan.storage/interfaces/ucan_storage._internal_.ValidateOptions.html
