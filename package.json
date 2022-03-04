@@ -47,6 +47,7 @@
     "sade": "^1.8.1"
   },
   "devDependencies": {
+    "@types/node": "^17.0.21",
     "hd-scripts": "^1.1.0",
     "lint-staged": "^12.3.4",
     "prettier": "2.5.1",

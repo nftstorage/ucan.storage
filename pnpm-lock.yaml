@@ -2,6 +2,7 @@ lockfileVersion: 5.3
 
 specifiers:
   '@noble/ed25519': ^1.5.2
+  '@types/node': ^17.0.21
   base-x: ^4.0.0
   hd-scripts: ^1.1.0
   lint-staged: ^12.3.4
@@ -20,6 +21,7 @@ dependencies:
   sade: 1.8.1
 
 devDependencies:
+  '@types/node': 17.0.21
   hd-scripts: 1.1.1
   lint-staged: 12.3.4
   prettier: 2.5.1
@@ -134,6 +136,10 @@ packages:
 
   /@types/json5/0.0.29:
     resolution: {integrity: sha1-7ihweulOEdK4J7y+UnC86n8+ce4=}
+    dev: true
+
+  /@types/node/17.0.21:
+    resolution: {integrity: sha512-DBZCJbhII3r90XbQxI8Y9IjjiiOGlZ0Hr32omXIZvwwZ7p4DMMXGrKXVyPfuoBOri9XNtL0UK69jYIBIsRX3QQ==}
     dev: true
 
   /@types/normalize-package-data/2.4.1:
