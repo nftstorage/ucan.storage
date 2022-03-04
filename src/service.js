@@ -51,7 +51,15 @@ export class Service {
    */
   async validateFromCaps(encodedUcan) {
     const token = await UcanChain.fromToken(encodedUcan, {})
+    if (token.audience() !== this.did()) {
+      throw new Error('Invalid UCAN: Audience does not match this service.')
+    }
+
     const caps = token.caps(storageSemantics)
+
+    if (caps[0].root.issuer() !== this.did()) {
+      throw new Error('Invalid UCAN: Root issuer does not match this service.')
+    }
 
     return caps[0]
   }
