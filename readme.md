@@ -6,19 +6,6 @@ UCAN.storage was designed to be used with [NFT.Storage](https://nft.storage) and
 
 This repository also contains the reference implementation of the [spec][spec], in the form of a JavaScript package called `ucan-storage`. See the [Use cases](#use-cases) section below to see how it can be used, along with some code snippets.
 
-## Getting Started
-
-We use `pnpm` in this project and commit the `pnpm-lock.yaml` file.
-
-### Install dependencies.
-
-```bash
-# install all dependencies in the mono-repo
-pnpm
-# setup git hooks
-npx simple-git-hooks
-```
-
 ## How it works
 
 Authorization using UCANs works differently than many other authorization schemes, so it's worth taking a moment to understand the terms and concepts involved.
@@ -57,6 +44,20 @@ The request token has the end-user's DID in the `iss` field, with the DID for th
 
 The request token is attached to the upload to NFT.Storage, which validates the chain of proofs encoded in the token and confirms the cryptographic identity of each participant by checking the token signatures. If the token is valid and the permissions encoded in the request token are sufficient to carry out the request, it will succeed.
 
+## Installation and usage
+
+You can install the `ucan-storage` package with your favorite JS dependency manager, e.g.:
+
+```bash
+npm install ucan-storage
+```
+
+The main exports are the [`build`][typdeoc-build] and [`validate`][typedoc-validate] methods, as well as the [`KeyPair` class][typedoc-keypair] used to manage signing keys.
+
+```js
+import { build, validate, KeyPair } from 'ucan-storage'
+```
+
 ## Use cases
 
 The `ucan-storage` JavaScript package supports the creation and verification of UCAN tokens, including the ability to create the "proof chains" that enable delgated authorization.
@@ -65,10 +66,115 @@ This README will walk through some common scenarios, to illustrate the main feat
 
 ### Generating a keypair
 
+To participate in the UCAN flow (both as a service, and as an end-user), you'll need a keypair.
+
+To generate a keypair using `ucan-storage`, use the static [`KeyPair.create` method][typdeoc-keypair-create]:
+
+```js
+import { KeyPair } from 'ucan-storage'
+
+// KeyPair.create returns a promise, so it should be called from an async function or resolved with `.then`
+async function createNewKeypair() {
+  const kp = await KeyPair.create()
+
+  // log the DID string for the public key to the console:
+  console.log(kp.did())
+}
+```
+
+### Saving and loading keypairs
+
+You can export your private key to a string that can be saved to disk with the [`export` method][typedoc-keypair-export] and load an exported key with the static [`fromExportedKey` method][typedoc-keypair-fromexportedkey]:
+
+```js
+import fs from 'fs'
+import { KeyPair } from 'ucan-storage'
+
+async function createAndSaveKeypair(outputFilename) {
+  const kp = await KeyPair.create()
+  await fs.promises.writeFile(kp)
+  return kp
+}
+
+async function loadKeyPairFromFile(keypairFilename) {
+  const exportedKey = await fs.promises.readFile(keypairFilename)
+  return KeyPair.fromExportedKey(exportedKey)
+}
+```
+
+**Important**: when saving to disk, take care to save your keys in a secure location!
+
+### Creating a UCAN token
+
+The [`build` function][typedoc-build] is used to create new UCAN tokens from a [`UcanStorageOptions` input object][typedoc-ucanstorageoptions].
+
+The `issuer` option must be set to a [`KeyPair` object][typedoc-keypair-class]. The private key will be used to sign the token, and the public key will be used to set the `iss` field in the token payload.
+
+The `audience` option must contain the DID string for the recipient's public key.
+
+The `capabilities` option must contain one or more [`StorageCapability`][typedoc-storagecapability] objects that represent the capabilities the token enables. If you are creating a token that derives capabilities from a "parent" UCAN token, the `capabilities` you pass in must be a _subset_ of the capabilities granted by the parent UCAN.
+
+The current `StorageCapabilities` are [`UploadAll`][typedoc-uploadall], which grants the ability to upload any content, and [`UploadImport`][typedoc-uploadimport], which grants access to uploading specific content, identified by content hash. See [the UCAN.Storage spec][spec] for more about storage capabilities.
+
+When creating a "child" UCAN based on another "parent" UCAN, the parent token (in its JWT string form) should be included in the `proofs` array in the `UcanStorageOptions` object.
+
+You can restrict the lifetime of the token by either setting an explicit `expiration` timestamp or setting a `lifetimeInSeconds` option. If both are set, `expiration` takes precedence.
+
+You can also issue tokens that will become valid at a future date by setting the `notBefore` option to a timestamp in the future. If `notBefore` and `expiration` are both set, `notBefore` must be less than `expiration.`
+
+Both timestamp options (`expiration` and `notBefore`) are Unix timestamps (seconds elapsed since the Unix epoch).
+
+#### Creating a root token
+
+You can create a "root token" with no parent by omitting the `proofs` field:
+
+```js
+import { build, KeyPair, UploadAll } from 'ucan-storage'
+
+async function makeRootToken(
+  issuerKeyPair,
+  audienceDID,
+  // FIXME: this won't actually work - UploadAll is a type definition. we need an object like: { with: 'storage://did', can: 'upload/*' }
+  capabilities = [UploadAll]
+) {
+  const token = await build({
+    issuer: issuerKeyPair,
+    audience: audienceDID,
+    capabilities,
+  })
+}
+```
+
+<!-- TODO: explain why this only makes sense to do if you're a storage service - most people reading these docs won't need to issue root tokens -->
+
+#### Deriving a child token
+
+If you have a UCAN token, you can create a "child token" that derives capabilities from the parent token. To do so, include the parent token in the `proofs` array when calling [build][typdeoc-build], and make sure that the `capabilities` you include do not exceed the capabilities in the parent token.
+
+<!-- TODO: this should include an example of setting capabilities, especially adding path segment to resource path. That probably needs more explanation around capabilities in the readme somewhere, to explain the "with" field & how resource paths work. -->
+
+```js
+import { build, KeyPair, UploadAll } from 'ucan-storage'
+
+async function deriveToken(
+  parentUCAN,
+  issuerKeyPair,
+  audienceDID,
+  capabilities = [UploadAll] // FIXME: same as above
+) {
+  const token = await build({
+    issuer: issuerKeyPair,
+    audience: audienceDID,
+    capabilities,
+    proofs: [parentUCAN],
+  })
+}
+```
+
 TODO: write up key use cases for the library:
 
-- [ ] generating a keypair & getting your DID
-- [ ] creating child UCANs for end users
+- [x] generating a keypair & getting your DID
+- [x] creating child UCANs for end users
   - [ ] restricting permissions (e.g. expiration limits, maybe content hash, etc)
   - [ ] highlight that you need the user's DID to issue their tokens
 - [ ] validating tokens
@@ -83,6 +189,19 @@ TODO:
 - [ ] how to get your service's root token
 - [ ] how to issue an expiring user token to your users
 
+## Contributing
+
+We use `pnpm` in this project and commit the `pnpm-lock.yaml` file.
+
+### Install dependencies.
+
+```bash
+# install all dependencies in the mono-repo
+pnpm
+# setup git hooks
+npx simple-git-hooks
+```
+
 [spec]: https://github.com/nftstorage/ucan.storage/blob/main/spec.md
 [ucan-intro]: https://ucan.xyz/
 [ucan-data-structure]: https://ucan.xyz/#the-ucan-data-structure
@@ -90,4 +209,15 @@ TODO:
 [did-key]: https://w3c-ccg.github.io/did-method-key/
 [jwt]: https://jwt.io/
 [unix-ts]: https://www.unixtimestamp.com/
-[ucan-storage-typedoc]: TODO://link-plz
+[ucan-storage-typedoc]: https://nftstorage.github.io/ucan.storage/
+[typedoc-keypair-class]: https://nftstorage.github.io/ucan.storage/classes/keypair.KeyPair.html
+[typdeoc-keypair-create]: https://nftstorage.github.io/ucan.storage/classes/keypair.KeyPair.html#create
+[typedoc-keypair-export]: https://nftstorage.github.io/ucan.storage/classes/keypair.KeyPair.html#export
+[typedoc-keypair-fromexportedkey]: https://nftstorage.github.io/ucan.storage/classes/keypair.KeyPair.html#fromExportedKey
+[typedoc-ucan-storage-module]: https://nftstorage.github.io/ucan.storage/modules/ucan_storage.html
+[typedoc-build]: https://nftstorage.github.io/ucan.storage/modules/ucan_storage.html#build
+[typedoc-validate]: https://nftstorage.github.io/ucan.storage/modules/ucan_storage.html#validate
+[typedoc-ucanstorageoptions]: https://nftstorage.github.io/ucan.storage/interfaces/ucan_storage._internal_.UcanStorageOptions.html
+[typedoc-storagecapability]: https://nftstorage.github.io/ucan.storage/modules/ucan_storage._internal_.html#StorageCapability
+[typedoc-uploadall]: https://nftstorage.github.io/ucan.storage/interfaces/ucan_storage._internal_.UploadAll.html
+[typedoc-uploadimport]: https://nftstorage.github.io/ucan.storage/interfaces/ucan_storage._internal_.UploadImport.html
