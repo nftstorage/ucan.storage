@@ -64,4 +64,21 @@ prog
     }
   })
 
+prog
+  .command('validate <ucan>', 'Validate a ucan.')
+  .action(async (ucan, opts) => {
+    try {
+      const { payload } = await Ucan.validate(ucan)
+
+      console.log(`Issuer: ${payload.iss}`)
+      console.log(`Audience: ${payload.aud}`)
+      console.log(`Expires: ${new Date(payload.exp * 1000).toISOString()}`)
+      console.log(`Capabilities: ${JSON.stringify(payload.att, undefined, 2)}`)
+      console.log(`Proofs: ${JSON.stringify(payload.prf, undefined, 2)}`)
+    } catch (error) {
+      console.error(error)
+      process.exit(1)
+    }
+  })
+
 prog.parse(process.argv)
