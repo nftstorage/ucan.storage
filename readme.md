@@ -358,6 +358,21 @@ curl -X POST -H "Authorization: Bearer $TOKEN" https://api.nft.storage/user/ucan
 
 You can use the root token to [derive child UCAN tokens](#deriving-a-child-token) for other users, or to [create a request token](#creating-a-request-token-to-upload-content) to upload content using UCAN auth instead of your API token.
 
+### Obtaining the service DID
+
+The DID for the NFT.Storage service is available at the public endpoint `https://api.nft.storage/did`.
+
+Send a `GET` request to `https://api.nft.storage/did`, which should return a JSON object of the form:
+
+```json
+{
+  "ok": true,
+  "value": "<service-did>"
+}
+```
+
+The `value` field contains the service DID, which is used when [creating request tokens](#creating-a-request-token-to-upload-content).
+
 ## Contributing
 
 We use `pnpm` in this project and commit the `pnpm-lock.yaml` file.
