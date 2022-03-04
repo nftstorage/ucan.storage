@@ -28,7 +28,7 @@ The `nbf` or "not before" and `exp` or "expiry" fields contain [Unix timestamps]
 
 The `prf` or "proof" field contains the "chain of proofs" that validates the delegated chain of authority.
 
-The `att` or "attenuations" field specifies the permissions that the token should grant to the bearer. These are described in the [UCAN.Storage spec][spec] and can be hand-waved away for now.
+The `att` or "attenuations" field specifies the permissions that the token should grant to the bearer. These are described in the [Storage capabilities](#storage-capabiliites) section below, and in greater detail in the [UCAN.Storage spec][spec].
 
 To illustrate the authorization flow, let's walk through an example using NFT.Storage as the storage service and an NFT marketplace that wants to allow their users to upload to NFT.Storage.
 
@@ -36,13 +36,40 @@ First, the marketplace will generate a keypair and register their DID with the s
 
 When an end-user logs into the marketplace and wants to upload to NFT.Storage, the marketplace can use their root token to create a **user token**. This time, the `iss` field contains the DID for the marketplace, since they are the one issuing the token, and the `aud` field contains the DID of the end user. The `prf` or "proof" field of the user token will contain a copy of the marketplace's root token, to verify that they actually have the permissions they're attempting to delegate. The root token is safe to share with the end-user, because it cannot be "redeemed" for storage services without the marketplace's private key.
 
-When issuing the user token, the marketplace can choose to grant all the permissions that they have access to via the root token, or they can grant a subset of the permissions. The marketplace can also set an expiration time for the user tokens, so that a lost or compromised token will eventually "time out." See the [UCAN.Storage spec][spec] for more about the permissions available.
+When issuing the user token, the marketplace can choose to grant all the permissions that they have access to via the root token, or they can grant a subset of the permissions. The marketplace can also set an expiration time for the user tokens, so that a lost or compromised token will eventually "time out." See [Storage capabilities](#storage-capabiliites) below for more about the permissions available.
 
 Once a marketplace end-user has a user token, they'll create one last token, a **request token** that authorizes their upload request to the NFT.Storage service. The request token is generated _by the user_, most likely in the browser with JavaScript, and it must include a signature from their private key.
 
 The request token has the end-user's DID in the `iss` field, with the DID for the NFT.Storage service in the `aud` field. The `prf` field contains a copy of the user token that was issued by the marketplace, which in turn has the root token in its own `prf` field.
 
 The request token is attached to the upload to NFT.Storage, which validates the chain of proofs encoded in the token and confirms the cryptographic identity of each participant by checking the token signatures. If the token is valid and the permissions encoded in the request token are sufficient to carry out the request, it will succeed.
+
+### Storage capabilities
+
+UCAN tokens encode permissions as a set of "capabilities," which are objects describing actions that the token holder can perform upon some "resource."
+
+UCAN.Storage supports the `storage` capability, which represents access to operations over storage resources (e.g., uploading a file to NFT.Storage).
+
+A capability object looks like this:
+
+```json
+{
+  "with": "storage://did:key:<user-public-key>",
+  "can": "upload/*"
+}
+```
+
+The `with` field specifies the **resource pointer**, which in the case of UCAN.Storage is a string that includes the DID of the user to whom the token was issued. A `storage` resource pointer issued by a service that supports UCAN.Storage will always begin with the `storage://` prefix, followed by the DID that the token was issued to (the "audience" of the token).
+
+When deriving child tokens for a new user, you should append the DID of the new user to the resource path, with `/` characters separating the DID strings. For example, if your DID is `did:key:marketplace`, the token issued by the storage service would have the resource `storage://did:key:marketplace`. If you then issue a token to a user with the DID `did:key:user-1`, the new token should have a resource path of `storage://did:key:marketplace/did:key:user-1`.
+
+The `can` field specifies what **action** the token holder is authorized to perform. UCAN.Storage currently supports two actions, `upload/*` and `upload/IMPORT`.
+
+The `upload/*` or "upload all" action allows access to all upload operations under the given resource.
+
+The `upload/IMPORT` action allows access to upload a specific Content Archive (CAR), identified by the [multihash][multihash] of the CAR data.
+
+See the [UCAN.Storage spec][spec] for more details.
 
 ## Installation and usage
 
@@ -112,7 +139,7 @@ The `issuer` option must be set to a [`KeyPair` object][typedoc-keypair-class]. 
 
 The `audience` option must contain the DID string for the recipient's public key.
 
-The `capabilities` option must contain one or more [`StorageCapability`][typedoc-storagecapability] objects that represent the capabilities the token enables. If you are creating a token that derives capabilities from a "parent" UCAN token, the `capabilities` you pass in must be a _subset_ of the capabilities granted by the parent UCAN. See the section on [Storage capabilities](#storage-capabilities) below to learn more.
+The `capabilities` option must contain one or more [`StorageCapability`][typedoc-storagecapability] objects that represent the capabilities the token enables. If you are creating a token that derives capabilities from a "parent" UCAN token, the `capabilities` you pass in must be a _subset_ of the capabilities granted by the parent UCAN. See the section on [Storage capabilities](#storage-capabilities) to learn more.
 
 When creating a "child" UCAN based on another "parent" UCAN, the parent token (in its JWT string form) should be included in the `proofs` array in the `UcanStorageOptions` object.
 
@@ -121,31 +148,6 @@ You can restrict the lifetime of the token by either setting an explicit `expira
 You can also issue tokens that will become valid at a future date by setting the `notBefore` option to a timestamp in the future. If `notBefore` and `expiration` are both set, `notBefore` must be less than `expiration`.
 
 Both timestamp options (`expiration` and `notBefore`) are Unix timestamps (seconds elapsed since the Unix epoch).
-
-#### Storage capabilities
-
-UCAN tokens encode permissions as a set of "capabilities," which are objects describing actions that the token holder can perform upon some "resource."
-
-UCAN.Storage supports the `storage` capability, which represents access to operations over storage resources (e.g., uploading a file to NFT.Storage).
-
-A capability object looks like this:
-
-```json
-{
-  "with": "storage://did:key:<user-public-key>",
-  "can": "upload/*"
-}
-```
-
-The `with` field specifies the **resource pointer**, which in the case of UCAN.Storage is a string that includes the DID of the user to whom the token was issued. A `storage` resource pointer issued by a service that supports UCAN.Storage will always begin with the `storage://` prefix, followed by the DID that the token was issued to (the "audience" of the token).
-
-When deriving child tokens for a new user, you should append the DID of the new user to the resource path, with `/` characters seperating the DID strings. For example, if your DID is `did:key:marketplace`, the token issued by the storage service would have the resource `storage://did:key:marketplace`. If you then issue a token to a user with the DID `did:key:user-1`, the new token should have a resource path of `storage://did:key:marketplace/did:key:user-1`.
-
-The `can` field specifies what **action** the token holder is authorized to perform. UCAN.Storage currently supports two actions, `upload/*` and `upload/IMPORT`.
-
-The `upload/*` or "upload all" action allows access to all upload operations under the given resource.
-
-The `upload/IMPORT` action allows access to upload a specific Content Archive (CAR), identified by the [multihash][multihash] of the CAR data.
 
 #### Creating a root token
 
@@ -177,7 +179,7 @@ async function makeRootToken(
 
 If you have a UCAN token, you can create a "child token" that derives capabilities from the parent token. To do so, include the parent token in the `proofs` array when calling [build][typedoc-build], and make sure that the `capabilities` you include do not exceed the capabilities in the parent token.
 
-In this example, we first [validate](#validating-a-token) the parent token, which returns the parsed UCAN payload. From the payload, we can retrieve the capabilities from the `att` field and extend the resource path to include the DID of the "audience" for the new token.
+In this example, we first [validate](#validating-a-token) the parent token, which returns the parsed UCAN payload. From the payload, we can retrieve the [capabilities](#storage-capabilities) from the `att` field and extend the resource path to include the DID of the "audience" for the new token.
 
 ```js
 import { build, validate } from 'ucan-storage'
@@ -215,6 +217,8 @@ When uploading content to the storage service, the user will need to generate a 
 This token must have the DID for the storage service as the `audience`, with the end-user's DID as the `issuer`.
 
 The chain of `proofs` must include a UCAN token issued by the storage service, and the token must include capabilities sufficient to serve the request. This "proof token" may be issued by the storage service itself, or by a third party like an NFT marketplace who has [derived a child token](#deriving-a-child-token) to delegate storage services to end users.
+
+The `capabilites` field for the request token should include the capabilites from UCAN token that was issued to the user. These are found in the `att` field of the UCAN token payload and can be copied into the request token unmodified.
 
 ```js
 import { build } from 'ucan-storage'
