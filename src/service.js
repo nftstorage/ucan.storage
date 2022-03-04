@@ -69,13 +69,35 @@ export class Service {
   }
 
   /**
-   * @param {any} did
+   * @param {string} did
    */
   ucan(did) {
+    const ttl = 1_209_600 // 2 weeks
+
     return ucan.build({
       issuer: this.keypair,
       audience: did,
       capabilities: [{ with: `storage://${did}`, can: 'upload/*' }],
+      lifetimeInSeconds: ttl,
     })
+  }
+
+  /**
+   * @param {string} encodedUcan
+   * @param {string} did
+   */
+  async refresh(encodedUcan, did) {
+    const token = await UcanChain.fromToken(encodedUcan, {})
+
+    if (token.issuer() !== did) {
+      throw new Error('Issuer does not match this user in service.')
+    }
+
+    await this.validate(encodedUcan, {
+      with: `storage://${did}`,
+      can: 'upload/*',
+    })
+
+    return this.ucan(did)
   }
 }
