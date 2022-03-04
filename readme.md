@@ -112,31 +112,59 @@ The `issuer` option must be set to a [`KeyPair` object][typedoc-keypair-class]. 
 
 The `audience` option must contain the DID string for the recipient's public key.
 
-The `capabilities` option must contain one or more [`StorageCapability`][typedoc-storagecapability] objects that represent the capabilities the token enables. If you are creating a token that derives capabilities from a "parent" UCAN token, the `capabilities` you pass in must be a _subset_ of the capabilities granted by the parent UCAN.
-
-The current `StorageCapabilities` are [`UploadAll`][typedoc-uploadall], which grants the ability to upload any content, and [`UploadImport`][typedoc-uploadimport], which grants access to uploading specific content, identified by content hash. See [the UCAN.Storage spec][spec] for more about storage capabilities.
+The `capabilities` option must contain one or more [`StorageCapability`][typedoc-storagecapability] objects that represent the capabilities the token enables. If you are creating a token that derives capabilities from a "parent" UCAN token, the `capabilities` you pass in must be a _subset_ of the capabilities granted by the parent UCAN. See the section on [Storage capabilities](#storage-capabilities) below to learn more.
 
 When creating a "child" UCAN based on another "parent" UCAN, the parent token (in its JWT string form) should be included in the `proofs` array in the `UcanStorageOptions` object.
 
 You can restrict the lifetime of the token by either setting an explicit `expiration` timestamp or setting a `lifetimeInSeconds` option. If both are set, `expiration` takes precedence.
 
-You can also issue tokens that will become valid at a future date by setting the `notBefore` option to a timestamp in the future. If `notBefore` and `expiration` are both set, `notBefore` must be less than `expiration.`
+You can also issue tokens that will become valid at a future date by setting the `notBefore` option to a timestamp in the future. If `notBefore` and `expiration` are both set, `notBefore` must be less than `expiration`.
 
 Both timestamp options (`expiration` and `notBefore`) are Unix timestamps (seconds elapsed since the Unix epoch).
 
+#### Storage capabilities
+
+UCAN tokens encode permissions as a set of "capabilities," which are objects describing actions that the token holder can perform upon some "resource."
+
+UCAN.Storage supports the `storage` capability, which represents access to operations over storage resources (e.g., uploading a file to NFT.Storage).
+
+A capability object looks like this:
+
+```json
+{
+  "with": "storage://did:key:<user-public-key>",
+  "can": "upload/*"
+}
+```
+
+The `with` field specifies the **resource pointer**, which in the case of UCAN.Storage is a string that includes the DID of the user to whom the token was issued. A `storage` resource pointer issued by a service that supports UCAN.Storage will always begin with the `storage://` prefix, followed by the DID that the token was issued to (the "audience" of the token).
+
+When deriving child tokens for a new user, you should append the DID of the new user to the resource path, with `/` characters seperating the DID strings. For example, if your DID is `did:key:marketplace`, the token issued by the storage service would have the resource `storage://did:key:marketplace`. If you then issue a token to a user with the DID `did:key:user-1`, the new token should have a resource path of `storage://did:key:marketplace/did:key:user-1`.
+
+The `can` field specifies what **action** the token holder is authorized to perform. UCAN.Storage currently supports two actions, `upload/*` and `upload/IMPORT`.
+
+The `upload/*` or "upload all" action allows access to all upload operations under the given resource.
+
+The `upload/IMPORT` action allows access to upload a specific Content Archive (CAR), identified by the [multihash][multihash] of the CAR data.
+
 #### Creating a root token
 
-You can create a "root token" with no parent by omitting the `proofs` field:
+You can create a "root token" with no parent by omitting the `proofs` field when calling the [`build` function][typedoc-build]. This is generally only used in production by storage service providers (e.g. NFT.Storage) to issue tokens to users and marketplaces, but it is useful for all participants when writing tests, etc.
 
 ```js
-import { build, KeyPair, UploadAll } from 'ucan-storage'
+import { build } from 'ucan-storage'
 
 async function makeRootToken(
   issuerKeyPair,
   audienceDID,
-  // FIXME: this won't actually work - UploadAll is a type definition. we need an object like: { with: 'storage://did', can: 'upload/*' }
-  capabilities = [UploadAll]
+  actions = ['upload/*']
 ) {
+  // make "capability" objects from the actions
+  const capabilities = actions.map((action) => ({
+    with: `storage://${audienceDID}`,
+    can: action,
+  }))
+
   const token = await build({
     issuer: issuerKeyPair,
     audience: audienceDID,
@@ -144,40 +172,95 @@ async function makeRootToken(
   })
 }
 ```
-
-<!-- TODO: explain why this only makes sense to do if you're a storage service - most people reading these docs won't need to issue root tokens -->
 
 #### Deriving a child token
 
-If you have a UCAN token, you can create a "child token" that derives capabilities from the parent token. To do so, include the parent token in the `proofs` array when calling [build][typdeoc-build], and make sure that the `capabilities` you include do not exceed the capabilities in the parent token.
+If you have a UCAN token, you can create a "child token" that derives capabilities from the parent token. To do so, include the parent token in the `proofs` array when calling [build][typedoc-build], and make sure that the `capabilities` you include do not exceed the capabilities in the parent token.
 
-<!-- TODO: this should include an example of setting capabilities, especially adding path segment to resource path. That probably needs more explanation around capabilities in the readme somewhere, to explain the "with" field & how resource paths work. -->
+In this example, we first [validate](#validating-a-token) the parent token, which returns the parsed UCAN payload. From the payload, we can retrieve the capabilities from the `att` field and extend the resource path to include the DID of the "audience" for the new token.
 
 ```js
-import { build, KeyPair, UploadAll } from 'ucan-storage'
+import { build, validate } from 'ucan-storage'
 
-async function deriveToken(
-  parentUCAN,
-  issuerKeyPair,
-  audienceDID,
-  capabilities = [UploadAll] // FIXME: same as above
-) {
+async function deriveToken(parentUCAN, issuerKeyPair, audienceDID) {
+  // validate the parent UCAN and extract the payload
+  const { payload } = await validate(parentUCAN)
+
+  // the `att` field contains the capabilities
+  const { att } = payload
+
+  // for each capability in the parent, keep everything except the
+  // resource path, to which we append the DID for the new token's audience
+  const capabilities = att.map((capability) => ({
+    ...capability,
+    with: [capability.with, audienceDID].join('/'),
+  }))
+
+  // include the parent UCAN JWT string in the proofs array
+  const proofs = [parentUCAN]
+
   const token = await build({
     issuer: issuerKeyPair,
     audience: audienceDID,
     capabilities,
-    proofs: [parentUCAN],
+    proofs,
   })
 }
 ```
 
-TODO: write up key use cases for the library:
+#### Creating a request token to upload content
 
-- [x] generating a keypair & getting your DID
-- [x] creating child UCANs for end users
-  - [ ] restricting permissions (e.g. expiration limits, maybe content hash, etc)
-  - [ ] highlight that you need the user's DID to issue their tokens
-- [ ] validating tokens
+When uploading content to the storage service, the user will need to generate a UCAN token using their keypair and attach this "request token" to the upload request in a header.
+
+This token must have the DID for the storage service as the `audience`, with the end-user's DID as the `issuer`.
+
+The chain of `proofs` must include a UCAN token issued by the storage service, and the token must include capabilities sufficient to serve the request. This "proof token" may be issued by the storage service itself, or by a third party like an NFT marketplace who has [derived a child token](#deriving-a-child-token) to delegate storage services to end users.
+
+```js
+import { build } from 'ucan-storage'
+
+// The DID for the storage service. In real code, you should obtain this from the service you're targetting.
+const serviceDID = 'did:key:a-fake-service-did'
+
+async function createRequestToken(parentUCAN, issuerKeyPair) {
+  // we want to include the capabilities of the parent token in our request token
+  // so we validate the parent token to extract the payload and copy over the capabilities
+  const { payload } = await validate(parentUCAN)
+
+  // the `att` field contains the capabilities we need for uploading
+  const { att } = payload
+
+  return build({
+    issuer: issuerKeyPair,
+    audience: serviceDID,
+    capabilities: att,
+  })
+}
+```
+
+#### Setting an expiration date
+
+When creating a UCAN, you can set it to expire at a certain date by setting the `lifetimeInSeconds` or `expiration` options when calling [`build`][typedoc-build].
+
+The `expiration` option sets a point in time at which the token will expire. All parties in the UCAN flow should reject tokens with `expiration` dates in the past.
+
+You can create tokens that will not be valid unitl a time in the future by setting the `notBefore` option.
+
+Both `expiration` and `notBefore` are Unix timestamps, which record the number of seconds elapsed since the start of the Unix "epoch". JavaScript's `Date.now()` method returns epoch timestamps with millisecond resolution, so to get the correct value you must divide by 1000:
+
+```js
+// convert timestamp to seconds
+const nowInSeconds = Math.floor(Date.now() / 1000)
+
+// expire in one minute
+const expiration = nowInSeconds + 60
+```
+
+The `lifetimeInSeconds` option is a helper to set the `expiration` date relative to the current time, or the `notBefore` time if specified.
+
+#### Validating a token
+
+TODO: how to validate, how to skip validation checks
 
 ## Using UCANs with NFT.Storage
 
@@ -209,6 +292,7 @@ npx simple-git-hooks
 [did-key]: https://w3c-ccg.github.io/did-method-key/
 [jwt]: https://jwt.io/
 [unix-ts]: https://www.unixtimestamp.com/
+[multihash]: https://github.com/multiformats/multihash
 [ucan-storage-typedoc]: https://nftstorage.github.io/ucan.storage/
 [typedoc-keypair-class]: https://nftstorage.github.io/ucan.storage/classes/keypair.KeyPair.html
 [typdeoc-keypair-create]: https://nftstorage.github.io/ucan.storage/classes/keypair.KeyPair.html#create
