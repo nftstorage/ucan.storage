@@ -31,15 +31,16 @@ prog
   .option('--expiration', 'Expiration date in ISO 8601 format.')
   .option('--with', 'Resource pointer.')
   .option('--can', 'Allowed action on the resource.')
+  .option('--proof', 'Add proofs to the ucan.')
   .action(async (opts) => {
     try {
       const kp = await (opts.issuer
-        ? KeyPair.fromExportedKey(opts.from)
+        ? KeyPair.fromExportedKey(opts.issuer)
         : KeyPair.create())
 
       const milliseconds = Date.parse(opts.expiration)
-      const cap = { with: `storage://${opts.audience}`, can: 'upload/*' }
-
+      const cap = { with: `storage://${kp.did()}`, can: 'upload/*' }
+      const proofs = Array.isArray(opts.proof) ? opts.proof : [opts.proof]
       const ucan = await Ucan.build({
         issuer: kp,
         audience: opts.audience,
@@ -50,6 +51,7 @@ prog
             can: opts.can || cap.can,
           },
         ],
+        proofs: [...proofs],
       })
 
       const validated = await Ucan.validate(ucan)
