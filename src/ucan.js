@@ -104,7 +104,7 @@ export async function sign(payload, keypair) {
  *
  * @returns {Promise<import('./types').Ucan>}
  */
-export async function validate(encodedUcan, options) {
+export async function validate(encodedUcan, options = {}) {
   /** @type {import('./types').ValidateOptions} */
   const opts = {
     checkIssuer: true,
