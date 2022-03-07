@@ -22,7 +22,21 @@ jobs:
       - run: pnpm install
       - run: pnpm run lint
       - run: pnpm run test
-
+  test-browser-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: pnpm/action-setup@v2.0.1
+        with:
+          version: 6.32.x
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+          cache: 'pnpm'
+      - run: pnpm install
+      - run: npx playwright install --with-deps
+      - run: pnpm run test-browser
+      - run: pnpm run test-browser -- --browser firefox
   release:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'

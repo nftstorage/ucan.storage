@@ -33,6 +33,7 @@
     "docs": "pnpm run lint && typedoc src/ucan-storage.js src/keypair.js --out docs",
     "lint": "eslint '**/*.{js,ts,.d.ts}' && pnpm run format:check && tsc",
     "test": "uvu tests",
+    "test-browser": "pw-test tests --runner uvu",
     "test:watch": "watchlist src tests -- yarn test"
   },
   "files": [
