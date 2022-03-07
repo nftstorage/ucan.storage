@@ -36,7 +36,7 @@ First, the marketplace will generate a keypair and register their DID with the s
 
 When an end-user logs into the marketplace and wants to upload to NFT.Storage, the marketplace can use their root token to create a **user token**. This time, the `iss` field contains the DID for the marketplace, since they are the one issuing the token, and the `aud` field contains the DID of the end user. The `prf` or "proof" field of the user token will contain a copy of the marketplace's root token, to verify that they actually have the permissions they're attempting to delegate. The root token is safe to share with the end-user, because it cannot be "redeemed" for storage services without the marketplace's private key.
 
-When issuing the user token, the marketplace can choose to grant all the permissions that they have access to via the root token, or they can grant a subset of the permissions. The marketplace can also set an expiration time for the user tokens, so that a lost or compromised token will eventually "time out." See [Storage capabilities](#storage-capabiliites) below for more about the permissions available.
+When issuing the user token, the marketplace can choose to grant all the permissions that they have access to via the root token, or they can grant a subset of the permissions. The marketplace can also set an expiration time for the user tokens, so that a lost or compromised token will eventually expire. See [Storage capabilities](#storage-capabiliites) below for more about the permissions available.
 
 Once a marketplace end-user has a user token, they'll create one last token, a **request token** that authorizes their upload request to the NFT.Storage service. The request token is generated _by the user_, most likely in the browser with JavaScript, and it must include a signature from their private key.
 
@@ -82,8 +82,8 @@ npm install ucan-storage
 The main exports are the [`build`][typedoc-build] and [`validate`][typedoc-validate] methods, as well as the [`KeyPair` class][typedoc-keypair] used to manage signing keys.
 
 ```js
-import { build, validate, KeyPair } from 'ucan-storage'
-```
+import { build, validate } from 'ucan-storage/ucan-storage'
+import { KeyPair } from 'ucan-storage/keypair'
 
 ## Use cases
 
@@ -98,7 +98,7 @@ To participate in the UCAN flow (both as a service, and as an end-user), you'll 
 To generate a keypair using `ucan-storage`, use the static [`KeyPair.create` method][typedoc-keypair-create]:
 
 ```js
-import { KeyPair } from 'ucan-storage'
+import { KeyPair } from 'ucan-storage/keypair'
 
 // KeyPair.create returns a promise, so it should be called from an async function or resolved with `.then`
 async function createNewKeypair() {
@@ -115,11 +115,11 @@ You can export your private key to a string that can be saved to disk with the [
 
 ```js
 import fs from 'fs'
-import { KeyPair } from 'ucan-storage'
+import { KeyPair } from 'ucan-storage/keypair'
 
 async function createAndSaveKeypair(outputFilename) {
   const kp = await KeyPair.create()
-  await fs.promises.writeFile(kp)
+  await fs.promises.writeFile(kp.export())
   return kp
 }
 
@@ -154,7 +154,7 @@ Both timestamp options (`expiration` and `notBefore`) are Unix timestamps (secon
 You can create a "root token" with no parent by omitting the `proofs` field when calling the [`build` function][typedoc-build]. This is generally only used in production by storage service providers (e.g. NFT.Storage) to issue tokens to users and marketplaces, but it is useful for all participants when writing tests, etc.
 
 ```js
-import { build } from 'ucan-storage'
+import { build } from 'ucan-storage/ucan-storage'
 
 async function makeRootToken(
   issuerKeyPair,
@@ -182,7 +182,7 @@ If you have a UCAN token, you can create a "child token" that derives capabiliti
 In this example, we first [validate](#validating-a-token) the parent token, which returns the parsed UCAN payload. From the payload, we can retrieve the [capabilities](#storage-capabilities) from the `att` field and extend the resource path to include the DID of the "audience" for the new token.
 
 ```js
-import { build, validate } from 'ucan-storage'
+import { build, validate } from 'ucan-storage/ucan-storage'
 
 async function deriveToken(parentUCAN, issuerKeyPair, audienceDID) {
   // validate the parent UCAN and extract the payload
@@ -221,7 +221,7 @@ The chain of `proofs` must include a UCAN token issued by the storage service, a
 The `capabilites` field for the request token should include the capabilites from UCAN token that was issued to the user. These are found in the `att` field of the UCAN token payload and can be copied into the request token unmodified.
 
 ```js
-import { build } from 'ucan-storage'
+import { build } from 'ucan-storage/ucan-storage'
 
 // The DID for the storage service. In real code, you should obtain this from the service you're targetting.
 const serviceDID = 'did:key:a-fake-service-did'
@@ -238,6 +238,7 @@ async function createRequestToken(parentUCAN, issuerKeyPair) {
     issuer: issuerKeyPair,
     audience: serviceDID,
     capabilities: att,
+    proofs:[parentUcan]
   })
 }
 ```
@@ -269,7 +270,7 @@ You can validate a UCAN token using the [`validate` function][typedoc-validate],
 If validation fails, the `Promise` returned by `validate` will reject with an `Error`, so it's important to surround calls to `validate` with `try/catch` statements when calling from `async` functions, or use `.catch()` to handle errors if resolving `Promise`s manually.
 
 ```js
-import { validate } from 'ucan-storage'
+import { validate } from 'ucan-storage/ucan-storage'
 
 async function validateUCAN(ucanJWTString) {
   try {
@@ -322,7 +323,7 @@ To use the UCAN API endpoints, create an API token at your NFT.Storage [account 
 
 ### Registering your DID
 
-Once you have a normal API token, you can [generate a keypair](#generating-a-keypair) using the `ucan-storage` library and call an API endpoint to register the DID of the public key with the NFT.Storage service.
+Once you have a normal API token, you can [generate a keypair](#generating-a-keypair) using the `ucan-storage` CLI and call an API endpoint to register the DID of the public key with the NFT.Storage service.
 
 To register your DID, send a `POST` request to `https://api.nft.storage/user/did` with a body containing a JSON object of the form:
 
@@ -346,12 +347,12 @@ Once you've registered your DID, you can request a root UCAN token from the NFT.
 
 To request a root token, you must have either a normal API token or an existing root UCAN token. By providing an existing UCAN, you can "refresh" a token before it expires.
 
-Send a `POST` request to `https://api.nft.storage/user/ucan` to obtain a new UCAN token.
+Send a `POST` request to `https://api.nft.storage/ucan/token` to obtain a new UCAN token.
 
 In the example below, replace `$TOKEN` with either an existing UCAN token or an NFT.Storage API token. Or, set a shell variable named `TOKEN` before running the command.
 
 ```bash
-curl -X POST -H "Authorization: Bearer $TOKEN" https://api.nft.storage/user/ucan
+curl -X POST -H "Authorization: Bearer $TOKEN" https://api.nft.storage/ucan/token
 ```
 
 <!-- TODO: show response body -->
