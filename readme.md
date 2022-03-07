@@ -16,9 +16,9 @@ For example, if you're building an NFT marketplace and want users to upload art 
 
 UCAN provides a way for the storage service to issue a special kind of authorization token called a UCAN token. UCAN tokens can be used to derive "child" UCAN tokens, which can have a subset of the permissions encoded in the "parent" UCAN.
 
-UCAN tokens are standard [JSON Web Tokens (JWTs)][jwt] with some additional properties that allow the kind of delegated chains of authority we've been describing. The [UCAN data structure][ucan-data-structure] specifies some required properties of the JWT payload, some of which, like `iss` and `aud` are standard fields in the JWT spec.
-
 Participants in the UCAN auth flow are identified by a **keypair**, which is a **private signing key** with a corresponding **public verification key**. Each user or service involved in the flow will have their own keypair. The public key for each user or service is encoded into a [Decentralized Identity Document (DID)][did-overview], using the [did:key method][did-key], which encodes the public key into a compact string of the form `did:key:<encoded-public-key>`. These DID strings are used to identify each of the participants in the UCAN flow.
+
+UCAN tokens are standard [JSON Web Tokens (JWTs)][jwt] with some additional properties that allow the kind of delegated chains of authority we've been describing. The [UCAN data structure][ucan-data-structure] specifies some required properties of the JWT payload, some of which, like `iss` and `aud` are standard fields in the JWT spec.
 
 The `iss` or "issuer" field contains the public key that issued the token, encoded as a DID. The public key can be used to verify the token's signature, which must be created with the corresponding private signing key.
 
