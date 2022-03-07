@@ -4,7 +4,7 @@ This project defines a [specification][spec] for delegated authorization of dece
 
 UCAN.Storage was designed to be used with [NFT.Storage](https://nft.storage) and [Web3.Storage](https://web3.storage), which both provide storage services backed by the [Filecoin](https://filecoin.io) network, with content retrieval via the [InterPlanetary File System (IPFS)](https://ipfs.io).
 
-This repository also contains the reference implementation of the [spec][spec], in the form of a JavaScript package called `ucan-storage`. See the [Use cases](#use-cases) section below to see how it can be used, along with some code snippets.
+This repository also contains the reference implementation of the [spec][spec], in the form of a JavaScript package called `ucan-storage`. See the [Use cases](#use-cases) section below to see how it can be used, along with some example code for each use case.
 
 ## How it works
 
