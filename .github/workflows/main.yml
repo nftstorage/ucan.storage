@@ -72,17 +72,31 @@ jobs:
       - run: pnpm run test-browser -- --browser webkit
   release:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs:
       - test
       - test-browser-linux
       - test-browser-macos
       - test-browser-win
     steps:
-      - name: Docs 🔧
-        run: pnpm run docs
-      - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@v4.2.5
+      - uses: google-github-actions/release-please-action@v3
+        id: release
+      - uses: actions/checkout@v2
+      - uses: pnpm/action-setup@v2.0.1
         with:
-          branch: gh-pages # The branch the action should deploy to.
-          folder: docs # The folder the action should deploy.
+          version: 6.32.x
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+          cache: 'pnpm'
+      - run: pnpm install
+      - run: pnpm run docs
+      - uses: JamesIves/github-pages-deploy-action@v4.2.5
+        with:
+          branch: gh-pages
+          folder: docs
+      - run: pnpx t
+      - run: pnpm publish
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+        if: ${{ steps.release.outputs.release_created }}
