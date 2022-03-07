@@ -74,7 +74,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     needs:
-      - check
+      - test
       - test-browser-linux
       - test-browser-macos
       - test-browser-win
