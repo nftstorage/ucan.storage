@@ -1,7 +1,14 @@
 name: Build and Deploy
-on: [push]
+env:
+  CI: true
+  FORCE_COLOR: 1
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 jobs:
-  build-and-deploy:
+  check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -13,12 +20,17 @@ jobs:
           node-version: 16
           cache: 'pnpm'
       - run: pnpm install
-      - name: Lint 🔧 # This example project is built using npm and outputs the result to the 'build' folder. Replace with the commands required to build your project, or remove this step entirely if your site is pre-built.
-        run: pnpm run lint
+      - run: pnpm run lint
+      - run: pnpm run test
 
-      - name: Docs 🔧 # This example project is built using npm and outputs the result to the 'build' folder. Replace with the commands required to build your project, or remove this step entirely if your site is pre-built.
+  release:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    needs:
+      - check
+    steps:
+      - name: Docs 🔧
         run: pnpm run docs
-
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4.2.5
         with:

@@ -1,6 +1,6 @@
 import { test } from 'uvu'
 import * as assert from 'uvu/assert'
-import * as Ucan from '../src/index.js'
+import * as Ucan from '../src/ucan.js'
 import { UcanChain } from '../src/ucan-chain.js'
 import { storageSemantics } from '../src/semantics.js'
 

@@ -1,4 +1,4 @@
-import * as ucan from './index.js'
+import * as ucan from './ucan.js'
 
 /**
  * @template A

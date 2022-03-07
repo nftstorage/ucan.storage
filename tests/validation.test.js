@@ -1,7 +1,7 @@
 import { test } from 'uvu'
 import * as assert from 'uvu/assert'
 import { base64url, utf8 } from '../src/encoding.js'
-import { validate, KeyPair } from '../src/index.js'
+import { validate, KeyPair } from '../src/ucan.js'
 import { serialize } from '../src/utils.js'
 
 test('should fail with string "test"', async () => {
