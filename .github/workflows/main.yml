@@ -56,6 +56,7 @@ jobs:
       - run: pnpm run test-browser -- --browser webkit
   test-browser-win:
     runs-on: windows-latest
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v2
       - uses: pnpm/action-setup@v2.0.1
