@@ -1,9 +1,8 @@
 {
   "name": "ucan-storage",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "main": "src/index.js",
   "types": "dist/src/index.d.ts",
-  "typedocMain": "dist/src/index.js",
   "type": "module",
   "license": "MIT",
   "bin": {
@@ -11,7 +10,6 @@
   },
   "exports": {
     ".": "./src/index.js",
-    "./package.json": "./package.json",
     "./keypair": "./src/keypair.js",
     "./types": "./src/types.ts",
     "./did": "./src/did.js",
@@ -35,6 +33,7 @@
     "docs": "pnpm run lint && typedoc src/ucan-storage.js src/keypair.js --out docs",
     "lint": "eslint '**/*.{js,ts,.d.ts}' && pnpm run format:check && tsc",
     "test": "uvu tests",
+    "test-browser": "pw-test tests --runner uvu",
     "test:watch": "watchlist src tests -- yarn test"
   },
   "files": [
@@ -50,10 +49,11 @@
   "devDependencies": {
     "@types/node": "^17.0.21",
     "hd-scripts": "^1.1.0",
-    "lint-staged": "^12.3.4",
+    "lint-staged": "^12.3.5",
+    "playwright-test": "^7.2.2",
     "prettier": "2.5.1",
     "simple-git-hooks": "^2.7.0",
-    "typedoc": "^0.22.11",
+    "typedoc": "^0.22.13",
     "typedoc-plugin-missing-exports": "^0.22.6",
     "typescript": "4.5.5",
     "uvu": "^0.5.3",

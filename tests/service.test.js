@@ -1,16 +1,17 @@
 import { test } from 'uvu'
 import * as assert from 'uvu/assert'
-import * as Ucan from 'ucan-storage'
+import * as Ucan from '../src/ucan-storage.js'
 import { Service } from '../src/service.js'
+import { KeyPair } from '../src/keypair.js'
 
 test('should fail when audience is not service', async () => {
-  const userKp = await Ucan.KeyPair.create()
+  const userKp = await KeyPair.create()
   const service = await Service.create()
 
   const ucan = await service.ucan(userKp.did())
 
   try {
-    await service.validate(ucan.jwt)
+    await service.validate(ucan)
     assert.unreachable('should have thrown')
   } catch (error) {
     assert.instance(error, Error)
@@ -22,7 +23,7 @@ test('should fail when audience is not service', async () => {
 })
 
 test('should return caps for single ucan', async () => {
-  const userKp = await Ucan.KeyPair.create()
+  const userKp = await KeyPair.create()
   const service = await Service.create()
 
   const ucan = await service.ucan(userKp.did())

@@ -1,4 +1,4 @@
-import * as Ucan from './index.js'
+import * as Ucan from './ucan.js'
 import { storageSemantics } from './semantics.js'
 
 /**
@@ -28,4 +28,4 @@ export function validate(jwt, options) {
   return Ucan.validate(jwt, options)
 }
 
-export { isUcan } from './index.js'
+export { isUcan } from './ucan.js'

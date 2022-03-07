@@ -1,7 +1,14 @@
-name: Build and Deploy
-on: [push]
+name: Test and Deploy
+env:
+  CI: true
+  FORCE_COLOR: 1
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 jobs:
-  build-and-deploy:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -13,14 +20,83 @@ jobs:
           node-version: 16
           cache: 'pnpm'
       - run: pnpm install
-      - name: Lint 🔧 # This example project is built using npm and outputs the result to the 'build' folder. Replace with the commands required to build your project, or remove this step entirely if your site is pre-built.
-        run: pnpm run lint
-
-      - name: Docs 🔧 # This example project is built using npm and outputs the result to the 'build' folder. Replace with the commands required to build your project, or remove this step entirely if your site is pre-built.
-        run: pnpm run docs
-
-      - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@v4.2.5
+      - run: pnpm run lint
+      - run: pnpm run test
+  test-browser-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: pnpm/action-setup@v2.0.1
         with:
-          branch: gh-pages # The branch the action should deploy to.
-          folder: docs # The folder the action should deploy.
+          version: 6.32.x
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+          cache: 'pnpm'
+      - run: pnpm install
+      - run: npx playwright install --with-deps
+      - run: pnpm run test-browser
+      - run: pnpm run test-browser -- --browser firefox
+      - run: pnpm run test-browser -- --browser webkit
+  test-browser-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: pnpm/action-setup@v2.0.1
+        with:
+          version: 6.32.x
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+          cache: 'pnpm'
+      - run: pnpm install
+      - run: npx playwright install --with-deps
+      - run: pnpm run test-browser
+      - run: pnpm run test-browser -- --browser firefox
+      - run: pnpm run test-browser -- --browser webkit
+  test-browser-win:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: pnpm/action-setup@v2.0.1
+        with:
+          version: 6.32.x
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+          cache: 'pnpm'
+      - run: pnpm install
+      - run: npx playwright install --with-deps
+      - run: pnpm run test-browser
+      - run: pnpm run test-browser -- --browser firefox
+      - run: pnpm run test-browser -- --browser webkit
+  release:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs:
+      - test
+      - test-browser-linux
+      - test-browser-macos
+      - test-browser-win
+    steps:
+      - uses: google-github-actions/release-please-action@v3
+        id: release
+      - uses: actions/checkout@v2
+      - uses: pnpm/action-setup@v2.0.1
+        with:
+          version: 6.32.x
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+          cache: 'pnpm'
+      - run: pnpm install
+      - run: pnpm run docs
+      - uses: JamesIves/github-pages-deploy-action@v4.2.5
+        with:
+          branch: gh-pages
+          folder: docs
+      - run: pnpx t
+      - run: pnpm publish
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+        if: ${{ steps.release.outputs.release_created }}

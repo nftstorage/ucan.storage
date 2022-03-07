@@ -1,4 +1,4 @@
-import { test } from 'uvu'
+import { suite } from 'uvu'
 import * as assert from 'uvu/assert'
 import * as ed from '@noble/ed25519'
 import { KeyPair } from '../src/keypair.js'
@@ -6,6 +6,8 @@ import { base64Pad } from '../src/encoding.js'
 import { didToPublicKeyBytes } from '../src/did.js'
 
 const data = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8, 9])
+
+const test = suite('Keypair')
 
 test('create keypair ed25519', async () => {
   const kp = await KeyPair.create()
