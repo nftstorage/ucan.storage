@@ -31,7 +31,7 @@ export async function build(params) {
  * {@link UcanHeader} and {@link UcanPayload}, as well as the signature `Uint8Array`.
  *
  * @param {string} jwt - a UCAN token, encoded as a JWT string
- * @param {import('./types').ValidateOptions | undefined} options - flags to optionally skip portions of the validation process. If not set, all flags default to `true`, meaning checks will be performed.
+ * @param {import('./types').ValidateOptions} [options] - flags to optionally skip portions of the validation process. If not set, all flags default to `true`, meaning checks will be performed.
  * @returns {Promise<import('./types').ValidateResult>} a Promise that resolves to a {@link ValidateResult} if the token is valid, or rejects with an `Error` if validation fails.
  */
 export function validate(jwt, options) {
