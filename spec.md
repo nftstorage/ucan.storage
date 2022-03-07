@@ -95,6 +95,7 @@ When a [Service](#21-Service) issues a UCAN for `did:user1` the resource will be
 
 When restricting, the issuer can OPTIONALLY add another path segment to the resource URI. Using audience DID will guarantee uniqueness, although it is not REQUIRED to be unique and could be anything i.e. `storage://did:user-1/public`.
 
+
 <!--
 > We avoid name collisions simply by treating `/` terminated paths as directories and non `/` terminated as files.
 -->
