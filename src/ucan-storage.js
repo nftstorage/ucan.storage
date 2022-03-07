@@ -3,6 +3,7 @@ import { storageSemantics } from './semantics.js'
 
 /**
  * Construct and sign a new UCAN token with the given {@link UcanStorageOptions}.
+ * The UCAN is specific to the Storage services and semantics.
  *
  * @param {import('./types').UcanStorageOptions} params
  * @returns {Promise<string>} a Promise that resolves to the encoded JWT representation of the signed UCAN token.
@@ -22,7 +23,10 @@ export async function build(params) {
 }
 
 /**
- * Validate the given encoded UCAN token.
+ * Validate the given encoded UCAN token and return the parsed instance.
+ *
+ * **Note** This doesn't validate it's a valid UCAN chain but rather a single ucan is,
+ * disregarding the proof chain.
  *
  * You may optionally skip parts of the validation process by passing in {@link ValidateOptions}. By default,
  * all validation checks are performed.
