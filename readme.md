@@ -81,7 +81,7 @@ npm install ucan-storage
 
 The main exports are the [`build`][typedoc-build] and [`validate`][typedoc-validate] methods, as well as the [`KeyPair` class][typedoc-keypair] used to manage signing keys.
 
-```js
+````js
 import { build, validate } from 'ucan-storage/ucan-storage'
 import { KeyPair } from 'ucan-storage/keypair'
 
@@ -107,7 +107,7 @@ async function createNewKeypair() {
   // log the DID string for the public key to the console:
   console.log(kp.did())
 }
-```
+````
 
 ### Saving and loading keypairs
 
@@ -238,7 +238,7 @@ async function createRequestToken(parentUCAN, issuerKeyPair) {
     issuer: issuerKeyPair,
     audience: serviceDID,
     capabilities: att,
-    proofs:[parentUcan]
+    proofs: [parentUcan],
   })
 }
 ```
