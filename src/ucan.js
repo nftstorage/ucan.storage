@@ -71,7 +71,7 @@ function buildPayload(params) {
  *
  * @param {import("./types").UcanPayload<string>} payload
  * @param {import("./keypair.js").KeyPair} keypair
- * 
+ *
  * @returns {Promise<import('./types').UcanWithJWT>}
  */
 export async function sign(payload, keypair) {
@@ -101,7 +101,7 @@ export async function sign(payload, keypair) {
 /**
  * @param {string} encodedUcan
  * @param {import('./types').ValidateOptions} [options]
- * 
+ *
  * @returns {Promise<import('./types').Ucan>}
  */
 export async function validate(encodedUcan, options) {
