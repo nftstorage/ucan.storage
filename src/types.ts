@@ -146,7 +146,7 @@ export interface UploadImport extends Capability {
   /**
    * Constrain an import by [multihash](https://github.com/multiformats/multihash)
    */
-  mh: string
+  mh?: string
 }
 
 export interface UcanStorageOptions extends Omit<BuildParams, 'capabilities'> {
