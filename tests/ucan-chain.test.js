@@ -101,6 +101,60 @@ test('should fail with unmatched from/to', async () => {
   }
 })
 
+test('should fail with unmatched from/to deep in the chain', async () => {
+  const kp1 = await Ucan.KeyPair.create()
+  const kp2 = await Ucan.KeyPair.create()
+  const kp3 = await Ucan.KeyPair.create()
+  const kp4 = await Ucan.KeyPair.create()
+  const kp5 = await Ucan.KeyPair.create()
+
+  const token1 = await Ucan.build({
+    issuer: kp1,
+    audience: kp2.did(),
+    lifetimeInSeconds: 1000,
+    capabilities: [
+      {
+        with: `storage://${kp2.did()}`,
+        can: 'upload/*',
+      },
+    ],
+  })
+
+  const token2 = await Ucan.build({
+    issuer: kp3,
+    audience: kp4.did(),
+    lifetimeInSeconds: 1000,
+    capabilities: [
+      {
+        with: `storage://${kp4.did()}`,
+        can: 'upload/*',
+      },
+    ],
+    proofs: [token1.jwt],
+  })
+
+  const token3 = await Ucan.build({
+    issuer: kp4,
+    audience: kp5.did(),
+    lifetimeInSeconds: 1000,
+    capabilities: [
+      {
+        with: `storage://${kp5.did()}`,
+        can: 'upload/*',
+      },
+    ],
+    proofs: [token2.jwt],
+  })
+
+  try {
+    await UcanChain.fromToken(token3.jwt)
+    assert.unreachable('should have thrown')
+  } catch (error) {
+    assert.instance(error, Error)
+    assert.match(error.message, 'Invalid UCAN: Audience')
+  }
+})
+
 test('should fail claim with bad capability', async () => {
   const kp1 = await Ucan.KeyPair.create()
   const kp2 = await Ucan.KeyPair.create()
