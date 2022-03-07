@@ -37,6 +37,7 @@ jobs:
       - run: npx playwright install --with-deps
       - run: pnpm run test-browser
       - run: pnpm run test-browser -- --browser firefox
+      - run: pnpm run test-browser -- --browser webkit
   release:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
