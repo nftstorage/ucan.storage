@@ -1,5 +1,7 @@
 # UCAN.Storage
 
+_Note: This feature is currently in Beta. If you encounter any issues when using, please [file an issue](https://github.com/nftstorage/ucan.storage/issues)!_
+
 This project defines a [specification][spec] for delegated authorization of decentralized storage services using [UCAN][ucan-intro], or User Controlled Authorization Networks.
 
 UCAN.Storage was designed to be used with [NFT.Storage](https://nft.storage) and [Web3.Storage](https://web3.storage), which both provide storage services backed by the [Filecoin](https://filecoin.io) network, with content retrieval via the [InterPlanetary File System (IPFS)](https://ipfs.io).
@@ -305,7 +307,7 @@ async function validateIgnoringEarlyBirds(ucanJWTString) {
 }
 ```
 
-## Using UCANs with NFT.Storage
+## Using UCANs with NFT.Storage - In Beta
 
 <!-- TODO: move this section into the NFT.Storage docs & link from here -->
 
