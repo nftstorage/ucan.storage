@@ -402,6 +402,7 @@ async function validateIgnoringEarlyBirds(ucanJWTString) {
   }
 }
 ```
+
 You can validate a token using the CLI with the `ucan-storage validate` command:
 
 ```bash
