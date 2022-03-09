@@ -430,6 +430,8 @@ Proofs: [
 
 <!-- TODO: move this section into the NFT.Storage docs & link from here -->
 
+_Use of UCANs to delegate upload permissions in NFT.Storage is currently a Preview Feature. If you use and have any feedback, please leave feedback in [this Github Discussion](https://github.com/nftstorage/nft.storage/discussions/1591)!_
+
 [NFT.Storage](https://nft.storage) is a free service for storing NFT data on the decentralized [Filecoin](https://filecoin.io) storage network, with content retrieval via [IPFS](https://ipfs.io).
 
 NFT.Storage is the first service to support UCAN-based authorization using the `ucan-storage` library.
