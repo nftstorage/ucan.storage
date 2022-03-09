@@ -81,9 +81,30 @@ npm install ucan-storage
 
 The main exports are the [`build`][typedoc-build] and [`validate`][typedoc-validate] methods, as well as the [`KeyPair` class][typedoc-keypair] used to manage signing keys.
 
-````js
+```js
 import { build, validate } from 'ucan-storage/ucan-storage'
 import { KeyPair } from 'ucan-storage/keypair'
+```
+
+## Using the `ucan-storage` command-line tool
+
+The `ucan-storage` package includes a command-line interface (CLI) that can help create keypairs and to create and validate UCAN tokens.
+
+The `ucan-storage` command will be available if you install the package globally with `npm install -g ucan-storage`. Alternatively, you can run without installing globally by using `npx`:
+
+```bash
+npx ucan-storage --help
+```
+
+The first time you run a command with `npx`, you'll get a prompt like this:
+
+```bash
+Need to install the following packages:
+  ucan-storage
+Ok to proceed? (y)
+```
+
+Answer `y` to make the command available to `npx`.
 
 ## Use cases
 
@@ -107,7 +128,23 @@ async function createNewKeypair() {
   // log the DID string for the public key to the console:
   console.log(kp.did())
 }
-````
+```
+
+To generate a keypair using the [CLI](#using-the-ucan-storage-command-line-tool), use the `ucan-storage keypair` command:
+
+```bash
+npx ucan-storage keypair
+```
+
+You should see output similar to this:
+
+```
+DID:           did:key:z6MkvxqUDNrq2QJhsMozHJnxPDHmv6KYpU9FmKKzWvxbUewg
+Public Key:    9U6gpYLouaQ2az2YlIWqBUQX1KWNiyDFmpVNZMcLBw8=
+Private Key:   sCpzGR3vC7qHGxhT7Wg6yvbhvHQABigLH+0+egJrV6o=
+```
+
+**Important**: when saving to disk, take care to save your private key in a secure location!
 
 ### Saving and loading keypairs
 
@@ -130,6 +167,20 @@ async function loadKeyPairFromFile(keypairFilename) {
 ```
 
 **Important**: when saving to disk, take care to save your keys in a secure location!
+
+You can get the public key and DID for a private key using the `ucan-storage keypair --from <private-key>` CLI command:
+
+```bash
+npx ucan-storage keypair --from sCpzGR3vC7qHGxhT7Wg6yvbhvHQABigLH+0+egJrV6o=
+```
+
+Output:
+
+```
+DID:           did:key:z6MkvxqUDNrq2QJhsMozHJnxPDHmv6KYpU9FmKKzWvxbUewg
+Public Key:    9U6gpYLouaQ2az2YlIWqBUQX1KWNiyDFmpVNZMcLBw8=
+Private Key:   sCpzGR3vC7qHGxhT7Wg6yvbhvHQABigLH+0+egJrV6o=
+```
 
 ### Creating a UCAN token
 
@@ -175,6 +226,19 @@ async function makeRootToken(
 }
 ```
 
+You can create a root token [CLI](#using-the-ucan-storage-command-line-tool) with the `ucan-storage ucan` command.
+
+```bash
+npx ucan-storage ucan \
+  --audience did:key:z6MkvxqUDNrq2QJhsMozHJnxPDHmv6KYpU9FmKKzWvxbUewg \
+  --with storage://did:key:z6MkvxqUDNrq2QJhsMozHJnxPDHmv6KYpU9FmKKzWvxbUewg \
+  --can 'upload/*'
+```
+
+Note that the example above omits the `--issuer` flag, so a new keypair will be randomly generated and used to sign the UCAN token. This is not very useful, so you should run the command with `--issuer <your-private-key>`.
+
+It's also best to set an expiration time, so that the UCAN does not remain valid indefinitely. The `--expiration` flag accepts a timestamp in [ISO 8601 format](https://en.wikipedia.org/wiki/ISO_8601).
+
 #### Deriving a child token
 
 If you have a UCAN token, you can create a "child token" that derives capabilities from the parent token. To do so, include the parent token in the `proofs` array when calling [build][typedoc-build], and make sure that the `capabilities` you include do not exceed the capabilities in the parent token.
@@ -209,6 +273,18 @@ async function deriveToken(parentUCAN, issuerKeyPair, audienceDID) {
   })
 }
 ```
+
+You can also use the [CLI](#using-the-ucan-storage-command-line-tool) to derive child UCAN tokens by adding the `--proof` flag when calling the `ucan-storage ucan` command:
+
+```bash
+npx ucan-storage ucan \
+  --audience did:key:z6MkvxqUDNrq2QJhsMozHJnxPDHmv6KYpU9FmKKzWvxbUewg \
+  --with storage://did:key:z6MkvxqUDNrq2QJhsMozHJnxPDHmv6KYpU9FmKKzWvxbUewg \
+  --can 'upload/*' \
+  --proof eyJhb...etc...
+```
+
+Pass in complete parent UCAN token as the argument to the `--proof` flag to include it in the proof chain of the generated token.
 
 #### Creating a request token to upload content
 
@@ -263,6 +339,28 @@ const expiration = nowInSeconds + 60
 
 The `lifetimeInSeconds` option is a helper to set the `expiration` date relative to the current time, or the `notBefore` time if specified.
 
+When creating UCAN tokens using the [CLI](#using-the-ucan-storage-command-line-tool), pass in an [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601)-formatted timestamp to the `--expiration` flag.
+
+Here's an example of generating an ISO 8601 date for 10 minutes past the current time on a few platforms:
+
+macOS / BSD coreutils:
+
+```bash
+date +%Y-%m-%dT%H:%M:%S%z -d $(date) + 10 minutes
+```
+
+GNU coreutils (found on most Linux distributions):
+
+```bash
+date --iso-8601=seconds -d $(date) + 10 minutes
+```
+
+Windows PowerShell:
+
+```powershell
+(Get-Date).AddMinutes(10).Format("o")
+```
+
 #### Validating a token
 
 You can validate a UCAN token using the [`validate` function][typedoc-validate], which accepts a JWT string and returns the parsed token contents if the token is valid.
@@ -304,8 +402,30 @@ async function validateIgnoringEarlyBirds(ucanJWTString) {
   }
 }
 ```
+You can validate a token using the CLI with the `ucan-storage validate` command:
 
-## Using UCANs with NFT.Storage - Preview Feature
+```bash
+npx ucan-storage validate eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCIsInVjdiI6IjAuOC4wIn0.eyJhdWQiOiJkaWQ6a2V5Ono2TWt2eHFVRE5ycTJRSmhzTW96SEpueFBESG12NktZcFU5Rm1LS3pXdnhiVWV3ZyIsImF0dCI6W3sid2l0aCI6InN0b3JhZ2U6Ly9kaWQ6a2V5Ono2TWt2eHFVRE5ycTJRSmhzTW96SEpueFBESG12NktZcFU5Rm1LS3pXdnhiVWV3ZyIsImNhbiI6InVwbG9hZC8qIn1dLCJleHAiOjE2NDY3NjkwNTAsImlzcyI6ImRpZDprZXk6ejZNa3NtRGRqVlAxWUhqd1pNd3FXaVFjWDFEWE00cGphNml5a2h6Q3hOZTlTaW5YIiwicHJmIjpbbnVsbF19.rOHzMzBWaFbH4tqS7aJ_4rBPkZbYQkck-fZLPD0skK3iRZUnxNUEFQITav5v70jzAwJIj757Xk2ImwOwmZ-4Dg
+```
+
+Example output:
+
+```
+Issuer: did:key:z6MksmDdjVP1YHjwZMwqWiQcX1DXM4pja6iykhzCxNe9SinX
+Audience: did:key:z6MkvxqUDNrq2QJhsMozHJnxPDHmv6KYpU9FmKKzWvxbUewg
+Expires: 2022-03-08T19:50:50.000Z
+Capabilities: [
+  {
+    "with": "storage://did:key:z6MkvxqUDNrq2QJhsMozHJnxPDHmv6KYpU9FmKKzWvxbUewg",
+    "can": "upload/*"
+  }
+]
+Proofs: [
+  null
+]
+```
+
+## Using UCANs with NFT.Storage
 
 <!-- TODO: move this section into the NFT.Storage docs & link from here -->
 
