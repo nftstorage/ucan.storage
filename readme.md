@@ -61,7 +61,7 @@ A capability object looks like this:
 
 The `with` field specifies the **resource pointer**, which in the case of UCAN.Storage is a string that includes the DID of the user to whom the token was issued. A `storage` resource pointer issued by a service that supports UCAN.Storage will always begin with the `storage://` prefix, followed by the DID that the token was issued to (the "audience" of the token).
 
-When deriving child tokens for a new user, you should append the DID of the new user to the resource path, with `/` characters separating the DID strings. For example, if your DID is `did:key:marketplace`, the token issued by the storage service would have the resource `storage://did:key:marketplace`. If you then issue a token to a user with the DID `did:key:user-1`, the new token should have a resource path of `storage://did:key:marketplace/did:key:user-1`.
+When deriving child tokens for a new user, you will probably want to restrict that user's access to a sub-path of your storage. A simple way to do this is to append the DID of the new user to the resource path, with `/` characters separating the DID strings. For example, if your DID is `did:key:marketplace`, the token issued by the storage service would have the resource `storage://did:key:marketplace`. You can then issue a token to a user with the DID `did:key:user-1` and a resource path of `storage://did:key:marketplace/did:key:user-1`.
 
 The `can` field specifies what **action** the token holder is authorized to perform. UCAN.Storage currently supports two actions, `upload/*` and `upload/IMPORT`.
 
