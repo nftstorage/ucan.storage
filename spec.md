@@ -93,7 +93,7 @@ The resource pointer MUST match the current proof scope. Meaning it will follow 
 
 When a [Service](#21-Service) issues a UCAN for `did:user1` the resource will be `storage://did:user-1`, if `user-1` issues a delegated UCAN to `did:user-2` it MAY further restrict the scope of it by setting the resource to `storage://did:user-1/did:user-2/`.
 
-When restricting the issuer MUST add another path segment to the resource URI. Using audience DID will guarantee uniqueness, although it is not REQUIRED to be unique and could be anything i.e. `storage://did:user-1/public`.
+When restricting, the issuer can OPTIONALLY add another path segment to the resource URI. Using audience DID will guarantee uniqueness, although it is not REQUIRED to be unique and could be anything i.e. `storage://did:user-1/public`.
 
 <!--
 > We avoid name collisions simply by treating `/` terminated paths as directories and non `/` terminated as files.
