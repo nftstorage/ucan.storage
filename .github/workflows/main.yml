@@ -47,8 +47,6 @@ jobs:
     needs:
       - test
       - test-browser-linux
-      - test-browser-macos
-      - test-browser-win
     steps:
       - uses: google-github-actions/release-please-action@v3
         id: release
