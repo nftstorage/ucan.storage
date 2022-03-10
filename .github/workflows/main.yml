@@ -66,8 +66,8 @@ jobs:
         with:
           branch: gh-pages
           folder: docs
-      - run: pnpx t
-      - run: pnpm publish
+      - run: pnpx tsc
+      - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
         if: ${{ steps.release.outputs.release_created }}
