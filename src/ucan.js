@@ -14,7 +14,10 @@ const VERSION = '0.8.0'
 export { KeyPair } from './keypair.js'
 
 /**
+ * Build a Ucan from the given parameters.
+ *
  * @param {import("./types").BuildParams} params
+ * @returns {Promise<import('./types').UcanWithJWT>}
  */
 export async function build(params) {
   const keypair = params.issuer
@@ -68,6 +71,8 @@ function buildPayload(params) {
  *
  * @param {import("./types").UcanPayload<string>} payload
  * @param {import("./keypair.js").KeyPair} keypair
+ *
+ * @returns {Promise<import('./types').UcanWithJWT>}
  */
 export async function sign(payload, keypair) {
   /** @type {import('./types').UcanHeader} */
@@ -88,7 +93,7 @@ export async function sign(payload, keypair) {
   return {
     header,
     payload,
-    signature: encodedSig,
+    signature: sig,
     jwt: encodedHeader + '.' + encodedPayload + '.' + encodedSig,
   }
 }
@@ -96,8 +101,10 @@ export async function sign(payload, keypair) {
 /**
  * @param {string} encodedUcan
  * @param {import('./types').ValidateOptions} [options]
+ *
+ * @returns {Promise<import('./types').Ucan>}
  */
-export async function validate(encodedUcan, options) {
+export async function validate(encodedUcan, options = {}) {
   /** @type {import('./types').ValidateOptions} */
   const opts = {
     checkIssuer: true,

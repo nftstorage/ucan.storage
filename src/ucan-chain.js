@@ -110,8 +110,10 @@ export class UcanChain {
   }
 
   /**
+   * Create an instance of UcanChain from a ucan jwt token
+   *
    * @param {string} encodedUcan
-   * @param {import('./types').ValidateOptions} options
+   * @param {import('./types').ValidateOptions} [options]
    * @returns {Promise<UcanChain>}
    */
   static async fromToken(encodedUcan, options) {

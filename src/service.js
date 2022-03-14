@@ -47,6 +47,8 @@ export class Service {
   }
 
   /**
+   * It checks the full validity of the chain, that root issuer and target audience is the service did.
+   *
    * @param {string} encodedUcan
    */
   async validateFromCaps(encodedUcan) {

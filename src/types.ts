@@ -37,26 +37,38 @@ export interface UcanHeader {
   ucv: string
 }
 
-/**
- * ### Payload
- *
- * `aud`, Audience, the ID of who it's intended for.
- * `exp`, Expiry, unix timestamp of when the jwt is no longer valid.
- * `fct`, Facts, an array of extra facts or information to attach to the jwt.
- * `iss`, Issuer, the ID of who sent this.
- * `nbf`, Not Before, unix timestamp of when the jwt becomes valid.
- * `nnc`, Nonce, a randomly generated string, used to ensure the uniqueness of the jwt.
- * `prf`, Proofs, nested tokens with equal or greater privileges.
- * `att`, Attenuation, a list of resources and capabilities that the ucan grants.
- */
 export interface UcanPayload<Prf = string> {
+  /**
+   * DID of the issuer
+   */
   iss: string
+  /**
+   * Audience, the ID of who it's intended for
+   */
   aud: string
+  /**
+   * Expiry, unix timestamp of when the jwt is no longer valid.
+   */
   exp: number
+  /**
+   * Not Before, unix timestamp of when the jwt becomes valid.
+   */
   nbf?: number
+  /**
+   * Nonce, a randomly generated string, used to ensure the uniqueness of the jwt.
+   */
   nnc?: string
+  /**
+   * Attenuation, a list of resources and capabilities that the ucan grants.
+   */
   att: Capability[]
+  /**
+   * Facts, an array of extra facts or information to attach to the jwt.
+   */
   fct?: Fact[]
+  /**
+   * Proofs, nested tokens with equal or greater privileges.
+   */
   prf: Prf[]
 }
 
@@ -69,6 +81,10 @@ export interface Ucan<Prf = string> {
   header: UcanHeader
   payload: UcanPayload<Prf>
   signature: Uint8Array
+}
+
+export interface UcanWithJWT extends Ucan {
+  jwt: string
 }
 
 /**

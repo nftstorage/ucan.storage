@@ -44,6 +44,8 @@ export class KeyPair {
   }
 
   /**
+   * Return the Base64 encoded public key
+   *
    * @returns {string} the public key, as a base64 encoded string (padded).
    */
   publicKeyStr() {
@@ -54,6 +56,8 @@ export class KeyPair {
   }
 
   /**
+   * Create did from public key
+   *
    * @returns {string} the public key, encoded into a `did:key:` DID string.
    */
   did() {
