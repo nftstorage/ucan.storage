@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.1.1](https://github.com/nftstorage/ucan.storage/compare/v1.1.0...v1.1.1) (2022-03-28)
+
+
+### Bug Fixes
+
+* add github repo to package.json ([b07a335](https://github.com/nftstorage/ucan.storage/commit/b07a3359c5a55f30637ba33ad9a9e092856e25d1))
+
 ## [1.1.0](https://github.com/nftstorage/ucan.storage/compare/v1.0.0...v1.1.0) (2022-03-28)
 
 
