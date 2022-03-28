@@ -5,6 +5,9 @@
   "types": "dist/src/index.d.ts",
   "type": "module",
   "license": "MIT",
+  "repository": {
+    "url": "nftstorage/ucan.storage"
+  },
   "bin": {
     "ucan-storage": "./src/cli.js"
   },
