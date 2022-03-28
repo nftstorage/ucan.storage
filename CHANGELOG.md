@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.1.0](https://github.com/nftstorage/ucan.storage/compare/v1.0.0...v1.1.0) (2022-03-28)
+
+
+### Features
+
+* export ucan-chain ([73dfbc3](https://github.com/nftstorage/ucan.storage/commit/73dfbc30387ff90ea9bf569f63e89430b5c07d44))
+
+
+### Bug Fixes
+
+* docs, js comments and minor improvements ([#5](https://github.com/nftstorage/ucan.storage/issues/5)) ([62672b3](https://github.com/nftstorage/ucan.storage/commit/62672b38b6b06e454ab4cad98d57192c63796d39))
+
 ## 1.0.0 (2022-03-10)
 
 
