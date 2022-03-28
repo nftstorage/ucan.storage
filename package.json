@@ -14,7 +14,8 @@
     "./types": "./src/types.ts",
     "./did": "./src/did.js",
     "./service": "./src/service.js",
-    "./ucan-storage": "./src/ucan-storage.js"
+    "./ucan-storage": "./src/ucan-storage.js",
+    "./ucan-chain": "./src/ucan-chain.js"
   },
   "typesVersions": {
     "*": {
