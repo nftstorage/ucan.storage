@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.1.2](https://github.com/nftstorage/ucan.storage/compare/v1.1.1...v1.1.2) (2022-03-29)
+
+
+### Bug Fixes
+
+* update readme ([34e20bc](https://github.com/nftstorage/ucan.storage/commit/34e20bc94690d355ec67bac7cf240946e054a64e))
+
 ### [1.1.1](https://github.com/nftstorage/ucan.storage/compare/v1.1.0...v1.1.1) (2022-03-28)
 
 
