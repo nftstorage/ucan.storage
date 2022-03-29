@@ -22,7 +22,7 @@ UCAN tokens are standard [JSON Web Tokens (JWTs)][jwt] with some additional prop
 
 The `iss` or "issuer" field contains the public key that issued the token, encoded as a DID. The public key can be used to verify the token's signature, which must be created with the corresponding private signing key.
 
-The `aud` or "audience" field contains the public key that should _recieve_ the token.
+The `aud` or "audience" field contains the public key that should _receive_ the token.
 
 The `nbf` or "not before" and `exp` or "expiry" fields contain [Unix timestamps][unix-ts] that can be used to control the time window during which the token should be considered valid.
 
