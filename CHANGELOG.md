@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.1.3](https://github.com/nftstorage/ucan.storage/compare/v1.1.2...v1.1.3) (2022-03-29)
+
+
+### Bug Fixes
+
+* add registry to ci ([5a91d1a](https://github.com/nftstorage/ucan.storage/commit/5a91d1a8a5a414ba21c797c0c1a97f609a653595))
+
 ### [1.1.2](https://github.com/nftstorage/ucan.storage/compare/v1.1.1...v1.1.2) (2022-03-29)
 
 
