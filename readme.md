@@ -63,11 +63,7 @@ The `with` field specifies the **resource pointer**, which in the case of UCAN.S
 
 When deriving child tokens for a new user, you will probably want to restrict that user's access to a sub-path of your storage. A simple way to do this is to append the DID of the new user to the resource path, with `/` characters separating the DID strings. For example, if your DID is `did:key:marketplace`, the token issued by the storage service would have the resource `storage://did:key:marketplace`. You can then issue a token to a user with the DID `did:key:user-1` and a resource path of `storage://did:key:marketplace/did:key:user-1`.
 
-The `can` field specifies what **action** the token holder is authorized to perform. UCAN.Storage currently supports two actions, `upload/*` and `upload/IMPORT`.
-
-The `upload/*` or "upload all" action allows access to all upload operations under the given resource.
-
-The `upload/IMPORT` action allows access to upload a specific Content Archive (CAR), identified by the [multihash][multihash] of the CAR data.
+The `can` field specifies what **action** the token holder is authorized to perform. UCAN.Storage currently supports the `upload/*` action, which allows uploading content. Additional actions with restrictions on permitted content may be added in a future release.
 
 See the [UCAN.Storage spec][spec] for more details.
 
