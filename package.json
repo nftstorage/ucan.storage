@@ -18,15 +18,13 @@
     "./did": "./src/did.js",
     "./service": "./src/service.js",
     "./ucan-storage": "./src/ucan-storage.js",
-    "./ucan-chain": "./src/ucan-chain.js"
+    "./ucan-chain": "./src/ucan-chain.js",
+    "./ucan": "./src/ucan.js"
   },
   "typesVersions": {
     "*": {
       "*": [
         "dist/src/*"
-      ],
-      "types": [
-        "src/types.ts"
       ]
     }
   },
