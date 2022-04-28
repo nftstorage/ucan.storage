@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/nftstorage/ucan.storage/compare/v1.1.3...v1.2.0) (2022-04-28)
+
+
+### Features
+
+* expose ucan and fix types ([3dbf983](https://github.com/nftstorage/ucan.storage/commit/3dbf98329f4d60106ac50d436cec602c5f1c9f1e))
+
 ### [1.1.3](https://github.com/nftstorage/ucan.storage/compare/v1.1.2...v1.1.3) (2022-03-29)
 
 
