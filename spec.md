@@ -11,7 +11,7 @@ UCAN.storage defines the [UCAN](https://github.com/ucan-wg/spec/blob/main/README
 
 ## Language
 
-The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
+The key words "**MUST**", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
 
 # 1. Introduction
 
@@ -68,9 +68,9 @@ The payload MUST describe the authorization claims being made, who is involved, 
 
 ### 3.2.2 Attenuation
 
-The REQUIRED `att` field contains a set of capabilities as defined in the [UCAN Attenuation Scope](https://github.com/ucan-wg/spec/blob/main/README.md#325-attenuation-scope).
+The REQUIRED `att` field contains a set of capabilities as defined in the [Capability Scope](https://github.com/ucan-wg/spec#24-capability-scope).
 
-For UCAN.storage `att` MUST contain at least one capability using the `storage` scheme.
+For UCAN.storage `att` MUST contain at least one `storage` capability.
 
 #### Examples
 
@@ -83,9 +83,9 @@ For UCAN.storage `att` MUST contain at least one capability using the `storage` 
 ]
 ```
 
-# 4. `storage` scheme
+# 4. `storage` Capability
 
-The `storage` scheme represents the ownership and access permissions over storage resources in a [Service](#21-Service).
+The `storage` capability represents the ownership and access to operations over storage resources in a [Service](#21-Service).
 
 ## 4.1 Resource Pointer
 
@@ -93,7 +93,8 @@ The resource pointer MUST match the current proof scope. Meaning it will follow 
 
 When a [Service](#21-Service) issues a UCAN for `did:user1` the resource will be `storage://did:user-1`, if `user-1` issues a delegated UCAN to `did:user-2` it MAY further restrict the scope of it by setting the resource to `storage://did:user-1/did:user-2/`.
 
-When restricting the issuer MUST add another path segment to the resource URI. Using audience DID will guarantee uniqueness, although it is not REQUIRED to be unique and could be anything i.e. `storage://did:user-1/public`.
+When restricting, the issuer can OPTIONALLY add another path segment to the resource URI. Using audience DID will guarantee uniqueness, although it is not REQUIRED to be unique and could be anything i.e. `storage://did:user-1/public`.
+
 
 <!--
 > We avoid name collisions simply by treating `/` terminated paths as directories and non `/` terminated as files.
@@ -134,11 +135,25 @@ When restricting the issuer MUST add another path segment to the resource URI. U
 
 ```
 
-## 4.2 Capabilities
+## 4.2 Actions
 
-### 4.2.1 `upload/IMPORT` Importing CARs
+### 4.2.1 Upload with all operations `upload/*`
 
-The `upload/IMPORT` capability allows access to importing a CAR under the specified resource in the `with` field.
+The `upload/*` action allows access to **ALL** upload operations under the specified resource in the `with` field.
+
+```json
+"att": [
+  {
+    "with": "storage://did:user",
+    "can": "upload/*",
+  }
+]
+
+```
+
+### 4.2.2 Upload with import operation `upload/IMPORT`
+
+The `upload/IMPORT` action allows access to importing a CARs under the specified resource in the `with` field.
 
 ```json
 "att": [
@@ -150,9 +165,9 @@ The `upload/IMPORT` capability allows access to importing a CAR under the specif
 
 ```
 
-#### 4.2.1.1 Constraints
+#### 4.2.2.1 `upload/IMPORT` Constraints
 
-The `upload/IMPORT` ability MUST support a OPTIONAL field `mh` to constrain an import by [multihash](https://github.com/multiformats/multihash).
+The `upload/IMPORT` action MUST support a OPTIONAL field `mh` to constrain an import by [multihash](https://github.com/multiformats/multihash).
 
 > A Service MAY use this multihash to perform integrity check.
 
@@ -242,7 +257,7 @@ sequenceDiagram
     },
   },
   "prf": [
-      ucan_0
+      ucan_0, ucan_1
   ]
 }
 ```
@@ -303,3 +318,9 @@ sequenceDiagram
   }
 }
 ```
+
+# Ideas
+
+protect against replay if nonce is present and ttl is short like 24h+-
+
+https://github.com/ucan-wg/spec#521-invocation-recipient-validation

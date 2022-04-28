@@ -1,27 +1,86 @@
 {
-  "name": "ucan.storage",
-  "version": "1.0.0",
+  "name": "ucan-storage",
+  "version": "1.2.0",
   "main": "src/index.js",
+  "types": "dist/src/index.d.ts",
   "type": "module",
   "license": "MIT",
-  "devDependencies": {
-    "eslint-config-prettier": "^8.3.0",
-    "typescript": "^4.5.5",
-    "eslint": "^8.7.0",
-    "eslint-config-ipfs": "^2.1.0",
-    "ucans": "^0.9.0-alpha3"
+  "repository": {
+    "url": "nftstorage/ucan.storage"
   },
+  "bin": {
+    "ucan-storage": "./src/cli.js"
+  },
+  "exports": {
+    ".": "./src/index.js",
+    "./keypair": "./src/keypair.js",
+    "./types": "./src/types.ts",
+    "./did": "./src/did.js",
+    "./service": "./src/service.js",
+    "./ucan-storage": "./src/ucan-storage.js",
+    "./ucan-chain": "./src/ucan-chain.js",
+    "./ucan": "./src/ucan.js"
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "dist/src/*"
+      ]
+    }
+  },
+  "scripts": {
+    "format": "prettier --write '**/*.{js,ts,yml,json}' --ignore-path .gitignore",
+    "format:check": "prettier --check '**/*.{js,ts,yml,json}' --ignore-path .gitignore",
+    "clean": "rm -rf node_modules yarn.lock dist pnpm-lock.yaml",
+    "docs": "pnpm run lint && typedoc src/ucan-storage.js src/keypair.js --out docs",
+    "lint": "eslint '**/*.{js,ts,.d.ts}' && pnpm run format:check && tsc",
+    "test": "uvu tests",
+    "test-browser": "pw-test tests --runner uvu",
+    "test:watch": "watchlist src tests -- yarn test"
+  },
+  "files": [
+    "src",
+    "dist/src/*.d.ts",
+    "dist/src/*.d.ts.map"
+  ],
   "dependencies": {
     "@noble/ed25519": "^1.5.2",
-    "uint8arrays": "^3.0.0"
+    "base-x": "^4.0.0",
+    "sade": "^1.8.1"
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.21",
+    "hd-scripts": "^1.1.0",
+    "lint-staged": "^12.3.5",
+    "playwright-test": "^7.2.2",
+    "prettier": "2.5.1",
+    "simple-git-hooks": "^2.7.0",
+    "typedoc": "^0.22.13",
+    "typedoc-plugin-missing-exports": "^0.22.6",
+    "typescript": "4.5.5",
+    "uvu": "^0.5.3",
+    "watchlist": "^0.3.1"
+  },
+  "engines": {
+    "node": ">= 14.0.0"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "npx lint-staged"
+  },
+  "lint-staged": {
+    "*.{js,ts,d.ts,yml,json}": "prettier --write",
+    "*.js": "eslint --fix"
   },
   "eslintConfig": {
     "extends": [
-      "ipfs",
-      "prettier"
-    ],
-    "parserOptions": {
-      "sourceType": "module"
-    }
-  }
+      "./node_modules/hd-scripts/eslint/index.js"
+    ]
+  },
+  "prettier": "./node_modules/hd-scripts/prettier.config.js",
+  "eslintIgnore": [
+    "node_modules",
+    "coverage",
+    "dist",
+    "docs"
+  ]
 }
