@@ -1,6 +1,6 @@
 {
   "name": "ucan-storage",
-  "version": "1.1.3",
+  "version": "1.2.0",
   "main": "src/index.js",
   "types": "dist/src/index.d.ts",
   "type": "module",
