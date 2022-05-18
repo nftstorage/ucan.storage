@@ -8,8 +8,8 @@ import {
   isTooEarly,
 } from './utils.js'
 
-const TYPE = 'JWT'
-const VERSION = '0.8.0'
+const _TOKEN_TYPE = 'JWT'
+const _UCAN_VERSION = '0.8.0'
 
 export { KeyPair } from './keypair.js'
 
@@ -78,8 +78,8 @@ export async function sign(payload, keypair) {
   /** @type {import('./types').UcanHeader} */
   const header = {
     alg: 'EdDSA',
-    typ: TYPE,
-    ucv: VERSION,
+    typ: _TOKEN_TYPE,
+    ucv: _UCAN_VERSION,
   }
 
   // Encode parts
