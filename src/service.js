@@ -63,7 +63,7 @@ export class Service {
       throw new Error('Invalid UCAN: Root issuer does not match this service.')
     }
 
-    return caps[0]
+    return { ...caps[0], issuer: token.issuer() }
   }
 
   did() {
