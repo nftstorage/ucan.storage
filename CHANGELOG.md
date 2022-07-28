@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/nftstorage/ucan.storage/compare/v1.2.0...v1.3.0) (2022-07-28)
+
+
+### Features
+
+* add token issuer to validateFromCaps result ([#31](https://github.com/nftstorage/ucan.storage/issues/31)) ([e7e84f0](https://github.com/nftstorage/ucan.storage/commit/e7e84f0727e287ad7adddde45b785424aac58be8))
+
 ## [1.2.0](https://github.com/nftstorage/ucan.storage/compare/v1.1.3...v1.2.0) (2022-04-28)
 
 
