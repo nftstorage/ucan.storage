@@ -222,7 +222,7 @@ sequenceDiagram
 {
   "iss": "did:service",
   "aud": "did:marketplace",
-  "exp": 1643905307, // 2 years into the future
+  "exp": 1643905307, // 2 weeks into the future
   "att": {
     {
       "with": "storage://did:marketplace",
