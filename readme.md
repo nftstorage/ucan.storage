@@ -152,7 +152,7 @@ import { KeyPair } from 'ucan-storage/keypair'
 
 async function createAndSaveKeypair(outputFilename) {
   const kp = await KeyPair.create()
-  await fs.promises.writeFile(kp.export())
+  await fs.promises.writeFile(outputFilename, kp.export())
   return kp
 }
 
