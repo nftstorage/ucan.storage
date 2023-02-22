@@ -1,5 +1,7 @@
 # UCAN.Storage
 
+> ❗️ This repo is likely no longer going to be maintained. NFT.Storage is in the process of being migrated to a natively UCAN-based API. If you have any questions, please reach out on the #nft-storage channel on [IPFS Discord](https://discord.com/invite/ipfs).
+
 This project defines a [specification][spec] for delegated authorization of decentralized storage services using [UCAN][ucan-intro], or User Controlled Authorization Networks.
 
 UCAN.Storage was designed to be used with [NFT.Storage](https://nft.storage) and [Web3.Storage](https://web3.storage), which both provide storage services backed by the [Filecoin](https://filecoin.io) network, with content retrieval via the [InterPlanetary File System (IPFS)](https://ipfs.io).
